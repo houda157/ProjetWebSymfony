@@ -49,7 +49,7 @@ class ClubController extends AbstractController
     }
     // ROUTE : /club/{id}/edit  (POST)
     #[Route('/club/{id}/edit', name: 'club_edit', methods: ['POST'])]
-    #[IsGranted('ROLE_USER')] // Remplace : if (!isset($_SESSION['user'])) header('Location: login.php')
+    //#[IsGranted('ROLE_USER')] // Remplace : if (!isset($_SESSION['user'])) header('Location: login.php')
     public function updateProfile(
         int $id,
         Request $request,
@@ -58,8 +58,8 @@ class ClubController extends AbstractController
         FileUploadService $uploader
     ): Response {
         $club = $clubRepo->findByUserId($id);
- 
-        if (!$club || $this->getUser()->getId() !== $id) {
+            // if (!$club || $this->getUser()->getId() !== $id)
+        if (!$club) {
             throw $this->createAccessDeniedException();
         }
         $club->setName($request->request->get('name'));
@@ -69,7 +69,7 @@ class ClubController extends AbstractController
         $profileImgFile = $request->files->get('profile_img');
         if ($profileImgFile) {
             $path = $uploader->upload($profileImgFile, 'users/profile_img', (string) $id);
-            $club->getUser()->setProfileImg($path);
+            //$club->getUser()->setProfileImg($path);
         }
  
         $coverImgFile = $request->files->get('cover_img');
