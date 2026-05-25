@@ -15,7 +15,23 @@ class EventRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Event::class);
     }
-
+    public function save(Event $event, bool $flush = true): void
+    {
+        $this->getEntityManager()->persist($event);
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+    public function findByClub(int $clubId): array
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.club = :clubId')
+            ->setParameter('clubId', $clubId)
+            ->orderBy('e.eventDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+}
 //    /**
 //     * @return Event[] Returns an array of Event objects
 //     */
@@ -40,4 +56,3 @@ class EventRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
-}

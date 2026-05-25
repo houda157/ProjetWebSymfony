@@ -15,6 +15,22 @@ class ClubRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Club::class);
     }
+    public function findByUserId(int $userId): ?Club 
+    {
+        return $this->createQueryBuilder('c')
+        ->join('c.user','u')
+        ->where('u.id = :userId')
+        ->setParameter('userId',$userId)
+        ->getQuery()
+        ->getOneOrNullResult();
+    }
+    public function save(Club $club,bool $flush=true):void
+    {
+        $this->getEntityManager()->persist($club);
+        if($flush){
+            $this->getEntityManager()->flush();
+        }
+    }
 
 //    /**
 //     * @return Club[] Returns an array of Club objects
