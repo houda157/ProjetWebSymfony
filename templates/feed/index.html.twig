@@ -12,7 +12,16 @@
                     <h5 class="mb-0">Upcoming Schedule</h5>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted">No liked upcoming events yet.</p>
+                    {% if upcoming is empty %}
+                        <p class="text-muted">No liked upcoming events yet.</p>
+                    {% else %}
+                        {% for ev in upcoming %}
+                            <div class="mb-2">
+                                <strong>{{ ev.title }}</strong><br>
+                                <small>{{ ev.eventDate|date('d/m/Y') }}</small>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             </div>
         </div>

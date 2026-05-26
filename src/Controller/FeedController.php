@@ -25,9 +25,19 @@ class FeedController extends AbstractController
         $events  = $eventRepo->findBy([], ['eventDate' => 'DESC']);
         $now     = new \DateTime();
 
+        $upcoming = [];
+        if ($student) {
+            foreach ($student->getLikes() as $like) {
+                $event = $like->getEvent();
+                if ($event->getEventDate() > $now) {
+                    $upcoming[] = $event;
+                }
+            }
+        }
+
         return $this->render('feed/index.html.twig', [
             'events'   => $events,
-            'upcoming' => [],
+            'upcoming' => $upcoming,
             'student'  => $student,
             'likeRepo' => $likeRepo,
             'now'      => $now,
