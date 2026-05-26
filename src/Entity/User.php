@@ -5,11 +5,12 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 
-
-class User implements PasswordAuthenticatedUserInterface
+class User implements UserInterface,PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -149,5 +150,20 @@ class User implements PasswordAuthenticatedUserInterface
         $this->club = $club;
 
         return $this;
+    }
+      public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+     public function getRoles(): array
+    {
+        $roles[] = $this->getRole()?:'ROLE_USER';
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+     public function eraseCredentials(): void
+    {
     }
 }

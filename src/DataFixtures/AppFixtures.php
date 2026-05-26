@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Entity\Club;
 use App\Entity\Event;
 use App\Entity\Follow;
@@ -13,22 +14,27 @@ use Doctrine\Persistence\ObjectManager;
 
 class AppFixtures extends Fixture
 {
+    public function __construct(
+        private readonly UserPasswordHasherInterface $passwordHasher,
+    ) {
+    }
+
     public function load(ObjectManager $manager): void
     {
         // ============ ADMIN ============
         $admin = new User();
         $admin->setEmail('admin@insat.tn');
         $admin->setUsername('admin1');
-        $admin->setPassword(md5('admin123'));
-        $admin->setRole('admin');
+        $admin->setPassword($this->passwordHasher->hashPassword($admin, 'admin123'));
+        $admin->setRole('ROLE_ADMIN');
         $admin->setCreatedAt(new \DateTime());
         $manager->persist($admin);
 
         // ============ CLUBS ============
         $clubsData = [
-            ['email' => 'club1@insat.tn', 'username' => 'gdsc',       'password' => 'abc123',  'role' => 'club_Confirmed',     'name' => 'GDSC INSAT',  'description' => 'Google Developer Student Club', 'category' => 'Tech'],
-            ['email' => 'club2@insat.tn', 'username' => 'ieee',       'password' => 'password','role' => 'club_Confirmed',     'name' => 'IEEE INSAT',  'description' => 'Engineering and innovation',    'category' => 'Engineering'],
-            ['email' => 'club3@insat.tn', 'username' => 'gamingclub', 'password' => 'qwerty',  'role' => 'club_NotConfirmed',  'name' => 'Gaming Club', 'description' => 'For gamers and esports lovers', 'category' => 'Fun'],
+            ['email' => 'club1@insat.tn', 'username' => 'gdsc',       'password' => 'abc123',  'role' => 'ROLE_CLUB_CONFIRMED',     'name' => 'GDSC INSAT',  'description' => 'Google Developer Student Club', 'category' => 'Tech'],
+            ['email' => 'club2@insat.tn', 'username' => 'ieee',       'password' => 'password','role' => 'ROLE_CLUB_CONFIRMED',     'name' => 'IEEE INSAT',  'description' => 'Engineering and innovation',    'category' => 'Engineering'],
+            ['email' => 'club3@insat.tn', 'username' => 'gamingclub', 'password' => 'qwerty',  'role' => 'ROLE_CLUB_NOT_CONFIRMED', 'name' => 'Gaming Club', 'description' => 'For gamers and esports lovers', 'category' => 'Fun'],
         ];
 
         $clubs = [];
@@ -36,7 +42,7 @@ class AppFixtures extends Fixture
             $user = new User();
             $user->setEmail($data['email']);
             $user->setUsername($data['username']);
-            $user->setPassword(md5($data['password']));
+            $user->setPassword($this->passwordHasher->hashPassword($user, $data['password']));
             $user->setRole($data['role']);
             $user->setCreatedAt(new \DateTime());
             $manager->persist($user);
@@ -66,8 +72,8 @@ class AppFixtures extends Fixture
             $user = new User();
             $user->setEmail($data['email']);
             $user->setUsername($data['username']);
-            $user->setPassword(md5($data['password']));
-            $user->setRole('student');
+            $user->setPassword($this->passwordHasher->hashPassword($user, $data['password']));
+            $user->setRole('ROLE_STUDENT');
             $user->setCreatedAt(new \DateTime());
             $manager->persist($user);
 
