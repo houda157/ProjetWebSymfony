@@ -198,3 +198,62 @@
     background-color: #6f0f01;
     color: #fff;
 }
+/* ──────────────────────────────────────────────────────
+   À AJOUTER dans public/css/club.css
+   (styles pour la page de création d'événement)
+   ────────────────────────────────────────────────────── */
+
+/* ── Drop zone pour upload d'image ──────────────────── */
+.photo-upload-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    background: #f9f9f9;
+    border: 2px dashed #8F1402;
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    color: #8F1402;
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+
+.photo-upload-label:hover {
+    background: #fdf0ee;
+    border-color: #6f0f01;
+}
+
+.photo-upload-label i {
+    color: #8F1402;
+}
+
+/* ── Bouton Cancel ──────────────────────────────────── */
+.btn-cancel {
+    padding: 10px 22px;
+    border-radius: 10px;
+    background: #f0f0f0;
+    color: #555;
+    font-weight: 600;
+    border: none;
+    transition: background 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-cancel:hover {
+    background: #e0e0e0;
+    color: #333;
+}
+
+/* ── Labels avec icônes (form-label) ────────────────── */
+.form-label {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 6px;
+}
+
+.form-label i {
+    color: #8F1402;
+    margin-right: 4px;
+}
