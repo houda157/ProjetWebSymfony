@@ -1,0 +1,25 @@
+/* public/css/base.css
+   Styles globaux — fond rosé, typographie de base */
+
+body {
+    background: linear-gradient(135deg, #fde8e0 0%, #f9d5d3 40%, #f5c6c8 100%);
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Alertes (flash messages) */
+.alert {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}

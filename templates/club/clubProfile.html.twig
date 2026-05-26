@@ -1,0 +1,277 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}INSAT Pulse – {{ club.name }}{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/club.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="page-body">
+    <div class="row g-4">
+
+        {# ── SIDEBAR GAUCHE ──────────────────────────────────────────── #}
+        <div class="col-12 col-md-4 col-lg-3">
+            <div class="sidebar-card">
+
+                <div class="club-avatar">
+                    {# Remplace : $club['profile_img'] ?: 'https://placehold.co/...' #}
+                    <img src="{{ club.user.profileImg ? asset('uploads/' ~ club.user.profileImg) : 'https://placehold.co/110x110?text=Logo' }}" alt="Logo">
+                </div>
+
+                {# Remplace : htmlspecialchars($club['name']) #}
+                <div class="club-name">{{ club.name }}</div>
+                <div class="club-handle">@{{ club.user.username }}</div>
+
+                <div class="stats-row">
+                    <div class="stat-item">
+                        {# Remplace : $followers->num_rows #}
+                        <div class="stat-num">{{ followers|length }}</div>
+                        <div class="stat-lbl">Followers</div>
+                    </div>
+                    <div class="stat-item">
+                        {# Remplace : $events->num_rows #}
+                        <div class="stat-num">{{ events|length }}</div>
+                        <div class="stat-lbl">Posts</div>
+                    </div>
+                </div>
+
+                <p class="club-bio">{{ club.description ?: 'No bio available.' }}</p>
+
+                <div class="sidebar-nav">
+                    {# Remplace : <?php if ($is_owner): ?> #}
+                    {% if isOwner %}
+                        <button class="nav-btn" data-panel="profile" onclick="switchPanel(this)">
+                            <i class="bi bi-person"></i> Profile
+                        </button>
+                        <button class="nav-btn active" data-panel="myposts" onclick="switchPanel(this)">
+                            <i class="bi bi-pencil-square"></i> My posts
+                        </button>
+                        <button class="nav-btn" data-panel="calendar" onclick="switchPanel(this)">
+                            <i class="bi bi-bookmark"></i> My calendar
+                        </button>
+                    {% else %}
+                        {# Bouton Follow/Unfollow — seuls les étudiants peuvent suivre #}
+                        {% if is_granted('ROLE_STUDENT') %}
+                            <form action="{{ path('club_follow_toggle', {id: club.user.id}) }}" method="POST">
+                                <input type="hidden" name="_token" value="{{ csrf_token('follow' ~ club.user.id) }}">
+                                <button type="submit" class="nav-btn btn-maroon" style="justify-content:center;">
+                                    {{ isFollowing ? '✓ Unfollow' : '+ Follow' }}
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+
+        {# ── CONTENU PRINCIPAL ───────────────────────────────────────── #}
+        <div class="col-12 col-md-8 col-lg-9">
+            <div class="content-card">
+
+                {# ══ PANEL : MY POSTS ══════════════════════════════════ #}
+                <div id="panel-myposts">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="panel-title">Club Feed</h2>
+
+                        {% if isOwner %}
+                            <a href="{{ path('event_create_form') }}" class="btn-maroon" style="text-decoration:none;">
+                                <i class="bi bi-plus-lg me-1"></i> Add post
+                            </a>
+                        {% endif %}
+                    </div>
+                    
+
+                    <div id="posts-feed">
+                        {% if events|length > 0 %}
+                            {% for e in events %}
+                                <div class="card mb-3 border-0 shadow-sm" style="border-radius:15px; overflow:hidden;">
+                                    {% if e.image %}
+                                        <img src="{{ asset('uploads/' ~ e.image) }}"
+                                             class="card-img-top"
+                                             style="max-height:300px; object-fit:cover;">
+                                    {% endif %}
+
+                                    <div class="card-body">
+                                        <h5 class="fw-bold">{{ e.title }}</h5>
+                                        <p class="text-muted small">
+                                            <i class="bi bi-geo-alt"></i> {{ e.place }} |
+                                            <i class="bi bi-clock"></i> {{ e.eventDate ? e.eventDate|date('Y-m-d H:i:s') : 'N/A' }}
+                                        </p>
+                                        <p>{{ e.description }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="blank-panel">
+                                <i class="bi bi-megaphone text-secondary" style="font-size:2.5rem;"></i>
+                                <span class="text-secondary">No posts published yet.</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# ══ PANEL : CALENDAR ══════════════════════════════════ #}
+                <div id="panel-calendar" class="d-none">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="panel-icon-block">
+                            <i class="bi bi-calendar3"></i>
+                        </div>
+                        <h2 class="panel-title">My Calendar</h2>
+                    </div>
+                    <div id="calendar"></div>
+                </div>
+
+                {# ══ PANEL : PROFILE SETTINGS ══════════════════════════ #}
+                {% if isOwner %}
+                    <div id="panel-profile" class="d-none">
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <div class="panel-icon-block">
+                                <i class="bi bi-person-circle"></i>
+                            </div>
+                            <h2 class="panel-title">Profile Settings</h2>
+                        </div>
+
+                        {{ form_start(form, {
+                            attr: { 'enctype': 'multipart/form-data' }
+                        }) }}
+
+                            {{ form_errors(form) }}
+
+                            {# Profile image + upload stylé #}
+                            <div class="text-center mb-4">
+                                <img src="{{ club.user.profileImg ? asset('uploads/' ~ club.user.profileImg) : 'https://placehold.co/120x120?text=Profile' }}"
+                                     alt="Profile"
+                                     class="rounded-circle mb-3 profile-edit-img"
+                                >
+
+                                <div class="mb-3">
+                                    <label for="profile_img" class="upload-label">
+                                        <i class="bi bi-cloud-arrow-up"></i>
+                                        <span id="profileFileLabel">Click to change profile photo</span>
+                                    </label>
+                                    {{ form_widget(form.profileImgFile, {
+                                        attr: {
+                                            'class': 'd-none',
+                                            'accept': 'image/*',
+                                            'id': 'profile_img'
+                                        }
+                                    }) }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="cover_img" class="upload-label">
+                                        <i class="bi bi-cloud-arrow-up"></i>
+                                        <span id="coverFileLabel">Click to change cover photo</span>
+                                    </label>
+                                    {{ form_widget(form.coverImgFile, {
+                                        attr: {
+                                            'class': 'd-none',
+                                            'accept': 'image/*',
+                                            'id': 'cover_img'
+                                        }
+                                    }) }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted">Club Name</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-pencil"></i></span>
+                                        {{ form_widget(form.name, { 'attr': { 'class': 'form-control' } }) }}
+                                    </div>
+                                    {{ form_errors(form.name) }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted">Category</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                                        {{ form_widget(form.category, { 'attr': { 'class': 'form-control' } }) }}
+                                    </div>
+                                    {{ form_errors(form.category) }}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-muted">Description</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                                    {{ form_widget(form.description, { 'attr': { 'class': 'form-control', 'rows': 4 } }) }}
+                                </div>
+                                {{ form_errors(form.description) }}
+                            </div>
+
+                            <div class="d-grid mt-4 mb-3">
+                                <button type="submit" class="btn btn-lg btn-save">
+                                    <i class="bi bi-check-lg me-2"></i> Save Changes
+                                </button>
+                            </div>
+
+                            {{ form_rest(form) }}
+                        {{ form_end(form) }}
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+    <script>
+        {% if isOwner %}
+        const profileImg = document.getElementById('profile_img');
+        if (profileImg) {
+            profileImg.addEventListener('change', function () {
+                document.getElementById('profileFileLabel').textContent =
+                    this.files[0] ? this.files[0].name : 'Click to change profile photo';
+            });
+        }
+
+        const coverImg = document.getElementById('cover_img');
+        if (coverImg) {
+            coverImg.addEventListener('change', function () {
+                document.getElementById('coverFileLabel').textContent =
+                    this.files[0] ? this.files[0].name : 'Click to change cover photo';
+            });
+        }
+        {% endif %}
+
+        let calendarRendered = false;
+
+        function switchPanel(btn) {
+            document.querySelectorAll('.sidebar-nav .nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            document.getElementById('panel-myposts').classList.add('d-none');
+            document.getElementById('panel-calendar').classList.add('d-none');
+            {% if isOwner %}
+            document.getElementById('panel-profile').classList.add('d-none');
+            {% endif %}
+
+            document.getElementById('panel-' + btn.dataset.panel).classList.remove('d-none');
+
+            if (btn.dataset.panel === 'calendar' && !calendarRendered) {
+                const calendarEvents = {{ events|map(e => {
+                    'title': e.title,
+                    'start': e.eventDate ? e.eventDate|date('Y-m-d') : null,
+                    'color': '#8F1402'
+                })|json_encode|raw }};
+
+                var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                    initialView: 'dayGridMonth',
+                    displayEventTime: false,
+                    events: calendarEvents
+                });
+                calendar.render();
+                calendarRendered = true;
+            }
+        }
+    </script>
+{% endblock %}

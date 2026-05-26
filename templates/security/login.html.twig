@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}INSAT Pulse - Login{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="login-container">
+        <div class="row g-0">
+            <div class="col-lg-5">
+                <div class="left-section">
+                    <div class="logo">
+                        <img src="{{ asset('images/logo.png') }}" alt="INSAT Pulse Logo">
+                    </div>
+
+                    <h1 class="login-text">Login your account</h1>
+
+                    {% if app.user %}
+                        <div class="alert alert-info">
+                            You are logged in as {{ app.user.userIdentifier }}.
+                            <a href="{{ path('app_logout') }}">Logout</a>
+                        </div>
+                    {% endif %}
+
+                    <form class="login-form" action="{{ path('app_login') }}" method="post">
+                        <div class="frame-4">
+                            <div class="frame-2">
+                                <label class="form-label" for="email">Email</label>
+                                <div class="rectangle-2">
+                                    <input
+                                        type="email"
+                                        class="form-control"
+                                        id="email"
+                                        name="_username"
+                                        value="{{ last_username }}"
+                                        autocomplete="email"
+                                        required
+                                        autofocus
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="frame-3">
+                                <label class="form-label" for="password">Password</label>
+                                <div class="rectangle-3">
+                                    <input
+                                        type="password"
+                                        class="form-control"
+                                        id="password"
+                                        name="_password"
+                                        autocomplete="current-password"
+                                        required
+                                    >
+                                </div>
+                            </div>
+
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                            {% if error %}
+                                <small class="text-danger">
+                                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                                </small>
+                            {% endif %}
+
+                            <div class="frame-1">
+                                <a href="#" class="forgot-password-link">Forgot password?</a>
+                                <button type="submit" class="login-button">Login</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="register">
+                        <p>Don't have an account? <a href="#" class="register-link">Register now</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="frame-6">
+                    <h1 class="hero-text">WHERE TODAY'S IDEAS TURN INTO TOMORROW'S REALITY</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

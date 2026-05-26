@@ -1,0 +1,153 @@
+{% set sessionUser = app.user %}
+
+{% if is_granted('ROLE_ADMIN') %}
+    {% set profileUrl = path('admin_dashboard') %}
+{% elseif is_granted('ROLE_CLUB_CONFIRMED') or is_granted('ROLE_CLUB_NOT_CONFIRMED') %}
+    {% set profileUrl = path('club_show', {id: sessionUser.id}) %}
+{# {% else %}
+    {% set profileUrl = path('student_profile', {id: sessionUser.id}) %} #}
+{% endif %}
+
+<nav class="navbar-home">
+
+    <div class="navbar-logo">
+        {# <a href="{{ path('app_home') }}">
+            <img src="{{ asset('images/logo.png') }}" alt="INSAT PULSE">
+        </a> #}
+    </div>
+
+    <div class="nav-icons">
+        {# <a href="{{ path('app_home') }}"
+           class="nav-icon-btn {{ app.request.attributes.get('_route') in ['app_home', 'admin_dashboard', 'club_feed', 'student_feed'] ? 'active' : '' }}"
+           title="Home">
+            <i class="bi bi-house-door-fill"></i>
+        </a> #}
+
+        {# <a href="{{ path('calendar') }}"
+           class="nav-icon-btn {{ app.request.attributes.get('_route') == 'calendar' ? 'active' : '' }}"
+           title="Calendar">
+            <i class="bi bi-calendar-event"></i>
+        </a> #}
+    </div>
+
+    <div class="navbar-search" style="position: relative;">
+        <svg class="search-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search clubs, events…" autocomplete="off">
+        <div id="searchDropdown"></div>
+    </div>
+
+    <div class="user-section">
+        <a href="{{ profileUrl }}" class="user-link">
+            <div class="user-handle">{{ sessionUser.username }}</div>
+            <div class="user-avatar">
+                {% if sessionUser.profileImg %}
+                    <img src="{{ asset('uploads/' ~ sessionUser.profileImg) }}" alt="Profile">
+                {% else %}
+                    <i class="bi bi-person-circle"></i>
+                {% endif %}
+            </div>
+        </a>
+
+        <a href="{{ path('app_logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+</nav>
+
+<script>
+const input = document.getElementById('searchInput');
+const dropdown = document.getElementById('searchDropdown');
+
+dropdown.style.cssText = `
+    display: none;
+    position: absolute;
+    top: 110%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+`;
+
+let debounceTimer;
+
+input.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    const q = input.value.trim();
+
+    if (q.length < 1) {
+        dropdown.style.display = 'none';
+        return;
+    }
+
+    debounceTimer = setTimeout(async () => {
+        try {
+            const res = await fetch('{{ path('do_search') }}?q=' + encodeURIComponent(q));
+            const data = await res.json();
+
+            dropdown.innerHTML = '';
+
+            const addHeader = (label) => {
+                const d = document.createElement('div');
+                d.style.cssText = 'padding: 8px 12px; font-size: 11px; color: #999; font-weight: 600; border-bottom: 1px solid #f0f0f0;';
+                d.textContent = label;
+                dropdown.appendChild(d);
+            };
+
+            if (data.clubs && data.clubs.length > 0) {
+                addHeader('CLUBS');
+                data.clubs.forEach(c => {
+                    const a = document.createElement('a');
+                    a.href = '/club/' + c.id;
+                    a.style.cssText = 'display: flex; align-items: center; gap: 10px; padding: 10px 12px; text-decoration: none; color: #333; border-bottom: 1px solid #f9f9f9;';
+                    const span = document.createElement('span');
+                    span.textContent = c.name;
+                    a.appendChild(span);
+                    dropdown.appendChild(a);
+                });
+            }
+
+            if (data.events && data.events.length > 0) {
+                addHeader('EVENTS');
+                data.events.forEach(e => {
+                    const a = document.createElement('a');
+                    a.href = '/event/' + e.id;
+                    a.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; text-decoration: none; color: #333; border-bottom: 1px solid #f9f9f9;';
+                    const title = document.createElement('span');
+                    title.textContent = e.title;
+                    const date = document.createElement('span');
+                    date.style.cssText = 'font-size: 11px; color: #aaa;';
+                    date.textContent = e.event_date;
+                    a.appendChild(title);
+                    a.appendChild(date);
+                    dropdown.appendChild(a);
+                });
+            }
+
+            if (dropdown.children.length === 0) {
+                const empty = document.createElement('div');
+                empty.style.cssText = 'padding: 14px; color: #aaa; text-align: center; font-size: 13px;';
+                empty.textContent = 'No results found';
+                dropdown.appendChild(empty);
+            }
+
+            dropdown.style.display = 'block';
+
+        } catch (err) {
+            console.error('Search error:', err);
+        }
+    }, 300);
+});
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.navbar-search')) {
+        dropdown.style.display = 'none';
+    }
+});
+</script>
