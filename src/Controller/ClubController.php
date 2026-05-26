@@ -80,5 +80,5 @@ class ClubController extends AbstractController
         $em->flush();
         return $this->redirectToRoute('club_show', ['id' => $id, 'success' => 1]);
     }
-    
+
 }
