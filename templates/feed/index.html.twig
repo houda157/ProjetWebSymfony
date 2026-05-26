@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}INSAT Pulse - Feed{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header" style="background-color:#8F1402; color:white;">
+                    <h5 class="mb-0">Upcoming Schedule</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">No liked upcoming events yet.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            {% if events is empty %}
+                <p>No posts yet.</p>
+            {% else %}
+                {% for event in events %}
+                    <div class="card mb-3 border-0 shadow-sm" style="border-radius:15px;">
+                        {% if event.image %}
+                            <img src="{{ asset('uploads/' ~ event.image) }}" class="card-img-top" style="max-height:300px; object-fit:cover; border-radius:15px 15px 0 0;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="fw-bold">{{ event.title }}</h5>
+                            <p>{{ event.description }}</p>
+                            <small>
+                                <span style="color:#8F1402; font-weight:600;">
+                                    {{ event.club.name }}
+                                </span> |
+                                {{ event.eventDate|date('Y-m-d H:i') }}
+                            </small>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}
