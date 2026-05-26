@@ -22,12 +22,22 @@
                 <p>No posts yet.</p>
             {% else %}
                 {% for event in events %}
+                    {% set isLiked = student ? likeRepo.findOneBy({'student': student, 'event': event}) : false %}
+                    {% set isPast  = event.eventDate < now %}
+
                     <div class="card mb-3 border-0 shadow-sm" style="border-radius:15px;">
                         {% if event.image %}
                             <img src="{{ asset('uploads/' ~ event.image) }}" class="card-img-top" style="max-height:300px; object-fit:cover; border-radius:15px 15px 0 0;">
                         {% endif %}
                         <div class="card-body">
                             <h5 class="fw-bold">{{ event.title }}</h5>
+
+                            {% if isPast %}
+                                <span class="badge mb-2" style="background-color:#8F1402;">
+                                    <i class="bi bi-clock-history me-1"></i> Event already passed
+                                </span>
+                            {% endif %}
+
                             <p>{{ event.description }}</p>
                             <small>
                                 <span style="color:#8F1402; font-weight:600;">
@@ -35,6 +45,15 @@
                                 </span> |
                                 {{ event.eventDate|date('Y-m-d H:i') }}
                             </small>
+
+                            <div class="d-flex gap-2 mt-2">
+                                <form action="{{ path('app_like', {id: event.id}) }}" method="POST">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('like' ~ event.id) }}">
+                                    <button type="submit" class="btn btn-sm" style="background-color:#8F1402; color:white;">
+                                        {{ isLiked ? '❤️ Unlike' : '🤍 Like' }}
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
