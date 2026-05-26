@@ -1,250 +1,213 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INSAT Pulse – {{ club.name }}</title>
+{% extends 'base.html.twig' %}
 
+{% block title %}INSAT Pulse – {{ club.name }}{% endblock %}
+
+{% block stylesheets %}
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/club.css') }}">
+{% endblock %}
 
-<link rel="stylesheet" href="/css/club.css">
-</head>
+{% block body %}
+<div class="page-body">
+    <div class="row g-4">
 
-<body style="background: linear-gradient(135deg, #fde8e0 0%, #f9d5d3 40%, #f5c6c8 100%); min-height: 100vh;">
+        {# ── SIDEBAR GAUCHE ──────────────────────────────────────────── #}
+        <div class="col-12 col-md-4 col-lg-3">
+            <div class="sidebar-card">
 
+                <div class="club-avatar">
+                    {# Remplace : $club['profile_img'] ?: 'https://placehold.co/...' #}
+                    <img src="{{ club.user.profileImg ? asset('uploads/' ~ club.user.profileImg) : 'https://placehold.co/110x110?text=Logo' }}" alt="Logo">
+                </div>
 
-    <div class="page-body">
-        <div class="row g-4">
+                {# Remplace : htmlspecialchars($club['name']) #}
+                <div class="club-name">{{ club.name }}</div>
+                <div class="club-handle">@{{ club.user.username }}</div>
 
-            {# ── SIDEBAR GAUCHE ──────────────────────────────────────────── #}
-            <div class="col-12 col-md-4 col-lg-3">
-                <div class="sidebar-card">
-
-                    <div class="club-avatar">
-                        {# Remplace : $club['cover_img'] ?: 'https://placehold.co/...' #}
-                        <img src="{{ club.coverImg ?: 'https://placehold.co/110x110?text=Logo' }}" alt="Logo">
+                <div class="stats-row">
+                    <div class="stat-item">
+                        {# Remplace : $followers->num_rows #}
+                        <div class="stat-num">{{ followers|length }}</div>
+                        <div class="stat-lbl">Followers</div>
                     </div>
-
-                    {# Remplace : htmlspecialchars($club['name']) — Twig échappe automatiquement #}
-                    <div class="club-name">{{ club.name }}</div>
-                    <div class="club-handle">@{{ club.user.username }}</div>
-
-                    <div class="stats-row">
-                        <div class="stat-item">
-                            {# Remplace : $followers->num_rows
-                               followers est une Collection Doctrine → |length donne le count #}
-                            <div class="stat-num">{{ followers|length }}</div>
-                            <div class="stat-lbl">Followers</div>
-                        </div>
-                        <div class="stat-item">
-                            {# Remplace : $events->num_rows #}
-                            <div class="stat-num">{{ events|length }}</div>
-                            <div class="stat-lbl">Posts</div>
-                        </div>
+                    <div class="stat-item">
+                        {# Remplace : $events->num_rows #}
+                        <div class="stat-num">{{ events|length }}</div>
+                        <div class="stat-lbl">Posts</div>
                     </div>
+                </div>
 
-                    {# Remplace : htmlspecialchars($club['description'] ?? 'No bio available.') #}
-                    <p class="club-bio">{{ club.description ?: 'No bio available.' }}</p>
+                <p class="club-bio">{{ club.description ?: 'No bio available.' }}</p>
 
-                    <div class="sidebar-nav">
-                        {# Remplace : <?php if($is_owner): ?> #}
-                        {#% if isOwner %#}
-                            <button class="nav-btn" data-panel="profile" onclick="switchPanel(this)">
-                                <i class="bi bi-person"></i> Profile
-                            </button>
-                        {#% endif %#}
+                <div class="sidebar-nav">
+                    {# Remplace : <?php if ($is_owner): ?> #}
+                    {% if isOwner %}
+                        <button class="nav-btn" data-panel="profile" onclick="switchPanel(this)">
+                            <i class="bi bi-person"></i> Profile
+                        </button>
                         <button class="nav-btn active" data-panel="myposts" onclick="switchPanel(this)">
                             <i class="bi bi-pencil-square"></i> My posts
                         </button>
                         <button class="nav-btn" data-panel="calendar" onclick="switchPanel(this)">
                             <i class="bi bi-bookmark"></i> My calendar
                         </button>
-                    </div>
-
+                    {% else %}
+                        {# Bouton Follow/Unfollow — seuls les étudiants peuvent suivre #}
+                        {% if is_granted('ROLE_STUDENT') %}
+                            <form action="{{ path('club_follow_toggle', {id: club.user.id}) }}" method="POST">
+                                <input type="hidden" name="_token" value="{{ csrf_token('follow' ~ club.user.id) }}">
+                                <button type="submit" class="nav-btn btn-maroon" style="justify-content:center;">
+                                    {{ isFollowing ? '✓ Unfollow' : '+ Follow' }}
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
                 </div>
+
             </div>
+        </div>
 
-            {# ── CONTENU PRINCIPAL ───────────────────────────────────────── #}
-            <div class="col-12 col-md-8 col-lg-9">
-                <div class="content-card">
+        {# ── CONTENU PRINCIPAL ───────────────────────────────────────── #}
+        <div class="col-12 col-md-8 col-lg-9">
+            <div class="content-card">
 
-                    {# ══ PANEL : MY POSTS ══════════════════════════════════ #}
-                    <div id="panel-myposts">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h2 style="font-weight:800; margin:0; color:#1a1a1a; font-size:1.4rem;">Club Feed</h2>
-                            <div class="d-flex gap-2">
+                {# ══ PANEL : MY POSTS ══════════════════════════════════ #}
+                <div id="panel-myposts">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="panel-title">Club Feed</h2>
 
-                                {# Remplace :
-                                   if (isset($_SESSION['user']) && $_SESSION['user']['id'] == $club_id)
-                                   app.user → l'utilisateur connecté (équivalent $_SESSION['user']) #}
-                                {% if app.user and app.user.id == club.user.id %}
-                                    {# path() remplace href="create-event.php" #}
-                                    <a href="{{ path('event_create_form') }}" class="btn-maroon" style="text-decoration:none;">
-                                        <i class="bi bi-plus-lg me-1"></i> Add post
-                                    </a>
-                                {% endif %}
+                        {% if isOwner %}
+                            <a href="{{ path('event_create_form') }}" class="btn-maroon" style="text-decoration:none;">
+                                <i class="bi bi-plus-lg me-1"></i> Add post
+                            </a>
+                        {% endif %}
+                    </div>
 
-                                {#% if isOwner %#}
-                                    <button class="btn-action"><i class="bi bi-bell"></i> Requests</button>
-                                    <button class="btn-action"><i class="bi bi-plus-lg"></i> add post</button>
-                                {#% endif %#}
-                                
-                            </div>
-                        </div>
+                    <div id="posts-feed">
+                        {% if events|length > 0 %}
+                            {% for e in events %}
+                                <div class="card mb-3 border-0 shadow-sm" style="border-radius:15px; overflow:hidden;">
+                                    {% if e.image %}
+                                        <img src="{{ asset('uploads/' ~ e.image) }}"
+                                             class="card-img-top"
+                                             style="max-height:300px; object-fit:cover;">
+                                    {% endif %}
 
-                        <div id="posts-feed">
-                            {# Remplace : if ($events->num_rows > 0): while ($e = $events->fetch_assoc()): #}
-                            {% if events|length > 0 %}
-                                {% for e in events %}
-                                    <div class="card mb-3 border-0 shadow-sm" style="border-radius:15px; overflow:hidden;">
-
-                                        {# Remplace : <?php if (!empty($e['image'])): ?> #}
-                                        {% if e.image %}
-                                            {# asset() génère l'URL publique vers public/uploads/... #}
-                                            <img src="{{ asset('uploads/' ~ e.image) }}"
-                                                 class="card-img-top"
-                                                 style="max-height:300px; object-fit:cover;">
-                                        {% endif %}
-
-                                        <div class="card-body">
-                                            <h5 class="fw-bold">{{ e.title }}</h5>
-                                            <p class="text-muted small">
-                                                <i class="bi bi-geo-alt"></i> {{ e.place }} |
-                                                <i class="bi bi-clock"></i>
-                                                {# Remplace : $e['event_date']
-                                                   Twig formate un objet DateTime avec le filtre date() #}
-                                                {{ e.eventDate|date('Y-m-d') }}
-                                            </p>
-                                            <p>{{ e.description }}</p>
-                                        </div>
+                                    <div class="card-body">
+                                        <h5 class="fw-bold">{{ e.title }}</h5>
+                                        <p class="text-muted small">
+                                            <i class="bi bi-geo-alt"></i> {{ e.place }} |
+                                            <i class="bi bi-clock"></i> {{ e.eventDate ? e.eventDate|date('Y-m-d H:i:s') : 'N/A' }}
+                                        </p>
+                                        <p>{{ e.description }}</p>
                                     </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="blank-panel">
-                                    <i class="bi bi-megaphone text-secondary" style="font-size:2.5rem;"></i>
-                                    <span class="text-secondary mt-2">No posts published yet.</span>
                                 </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    {# ══ PANEL : CALENDAR ══════════════════════════════════ #}
-                    <div id="panel-calendar" class="d-none">
-                        <div class="d-flex align-items-center gap-3 mb-4">
-                            <div style="background:#fbeaea; padding:10px; border-radius:12px;">
-                                <i class="bi bi-calendar3" style="color:#8B0000; font-size:1.5rem;"></i>
-                            </div>
-                            <h2 style="font-weight:800; margin:0; color:#1a1a1a; font-size:1.4rem;">My Calendar</h2>
-                        </div>
-                        <div id="calendar"></div>
-                    </div>
-
-                    {# ══ PANEL : PROFILE SETTINGS ══════════════════════════ #}
-                    {#% if isOwner %#}
-                    <div id="panel-profile" class="d-none">
-                        <div class="d-flex align-items-center gap-3 mb-4">
-                            <div style="background:#fbeaea; padding:10px; border-radius:12px;">
-                                <i class="bi bi-person-circle" style="color:#8B0000; font-size:1.5rem;"></i>
-                            </div>
-                            <h2 style="font-weight:800; margin:0; color:#1a1a1a; font-size:1.4rem;">Profile Settings</h2>
-                        </div>
-
-                        {# Remplace : if (isset($_GET['success'])): #}
-                        {% if app.request.query.has('success') %}
-                            <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
-                                <i class="bi bi-check-circle me-2"></i> Profile updated successfully!
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            {% endfor %}
+                        {% else %}
+                            <div class="blank-panel">
+                                <i class="bi bi-megaphone text-secondary" style="font-size:2.5rem;"></i>
+                                <span class="text-secondary">No posts published yet.</span>
                             </div>
                         {% endif %}
+                    </div>
+                </div>
 
-                        {# Remplace : <form action="club.php" method="POST" enctype="multipart/form-data">
-                           path('club_edit', {id: club.user.id}) génère /club/{id}/edit #}
+                {# ══ PANEL : CALENDAR ══════════════════════════════════ #}
+                <div id="panel-calendar" class="d-none">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="panel-icon-block">
+                            <i class="bi bi-calendar3"></i>
+                        </div>
+                        <h2 class="panel-title">My Calendar</h2>
+                    </div>
+                    <div id="calendar"></div>
+                </div>
+
+                {# ══ PANEL : PROFILE SETTINGS ══════════════════════════ #}
+                {% if isOwner %}
+                    <div id="panel-profile" class="d-none">
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <div class="panel-icon-block">
+                                <i class="bi bi-person-circle"></i>
+                            </div>
+                            <h2 class="panel-title">Profile Settings</h2>
+                        </div>
+
                         <form action="{{ path('club_edit', {id: club.user.id}) }}"
                               method="POST"
                               enctype="multipart/form-data">
 
-                            {# Remplace : <input type="hidden" name="action" value="update_profile">
-                               Plus besoin en Symfony — chaque route a sa propre URL #}
-
-                            {# Jeton CSRF anti-falsification — Symfony l'exige en POST #}
                             <input type="hidden" name="_token" value="{{ csrf_token('club_edit') }}">
 
-                            {# Profile Image #}
+                            {# Profile image + upload stylé #}
                             <div class="text-center mb-4">
-                                <img src="{{ club.user.profileImg ?: 'https://placehold.co/120x120?text=Profile' }}"
+                                <img src="{{ club.user.profileImg ? asset('uploads/' ~ club.user.profileImg) : 'https://placehold.co/120x120?text=Profile' }}"
                                      alt="Profile"
-                                     class="rounded-circle mb-3"
-                                     style="width:120px; height:120px; object-fit:cover; border:3px solid #8F1402;">
+                                     class="rounded-circle mb-3 profile-edit-img"
+                >
+
                                 <div class="mb-3">
-                                    <label for="profile_img" class="form-label fw-semibold text-muted">Change Profile Image</label>
-                                    <input type="file" name="profile_img" id="profile_img" class="form-control" accept="image/*">
+                                    <label for="profile_img" class="upload-label">
+                                        <i class="bi bi-cloud-arrow-up"></i>
+                                        <span id="profileFileLabel">Click to change profile photo</span>
+                                    </label>
+                                    <input type="file" name="profile_img" id="profile_img" accept="image/*" style="display:none;">
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="name" class="form-label fw-semibold text-muted">Club Name</label>
+                                    <label class="form-label fw-semibold text-muted">Club Name</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-pencil"></i></span>
-                                        {# Remplace : value="<?php echo htmlspecialchars($club['name']); ?>" #}
-                                        <input type="text" name="name" id="name"
-                                               class="form-control"
+                                        <input type="text" name="name" class="form-control"
                                                value="{{ club.name }}" required>
                                     </div>
                                 </div>
-
                                 <div class="col-md-6 mb-3">
-                                    <label for="category" class="form-label fw-semibold text-muted">Category</label>
+                                    <label class="form-label fw-semibold text-muted">Category</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-tag"></i></span>
-                                        <input type="text" name="category" id="category"
-                                               class="form-control"
+                                        <input type="text" name="category" class="form-control"
                                                value="{{ club.category ?? '' }}">
                                     </div>
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label for="description" class="form-label fw-semibold text-muted">Description</label>
+                                <label class="form-label fw-semibold text-muted">Description</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-card-text"></i></span>
-                                    <textarea name="description" id="description"
-                                              class="form-control" rows="4">{{ club.description ?? '' }}</textarea>
+                                    <textarea name="description" class="form-control" rows="4">{{ club.description ?? '' }}</textarea>
                                 </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="cover_img" class="form-label fw-semibold text-muted">Cover Image</label>
-                                {% if club.coverImg %}
-                                    <div class="mb-2">
-                                        <img src="{{ club.coverImg }}" alt="Cover"
-                                             class="img-fluid rounded-3"
-                                             style="max-height:150px; object-fit:cover;">
-                                    </div>
-                                {% endif %}
-                                <input type="file" name="cover_img" id="cover_img" class="form-control" accept="image/*">
-                            </div>
-
                             <div class="d-grid mt-4 mb-3">
-                                <button type="submit" class="btn btn-lg fw-bold"
-                                        style="background-color:#8F1402; color:#fff;">
+                                <button type="submit" class="btn btn-lg btn-save">
                                     <i class="bi bi-check-lg me-2"></i> Save Changes
                                 </button>
                             </div>
                         </form>
                     </div>
-                    {#% endif %#}
+                {% endif %}
 
-                </div>
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
     <script>
+        {% if isOwner %}
+        document.getElementById('profile_img').addEventListener('change', function () {
+            document.getElementById('profileFileLabel').textContent =
+                this.files[0] ? this.files[0].name : 'Click to change profile photo';
+        });
+        {% endif %}
+
         let calendarRendered = false;
 
         function switchPanel(btn) {
@@ -260,13 +223,9 @@
             document.getElementById('panel-' + btn.dataset.panel).classList.remove('d-none');
 
             if (btn.dataset.panel === 'calendar' && !calendarRendered) {
-
-                {# Remplace le bloc PHP qui construisait le JSON pour FullCalendar :
-                   json_encode([['title'=>$e['title'], 'start'=>$e['event_date'], 'color'=>'#8F1402']])
-                   Twig fait la même chose avec le filtre |json_encode #}
                 const calendarEvents = {{ events|map(e => {
                     'title': e.title,
-                    'start': e.eventDate|date('Y-m-d'),
+                    'start': e.eventDate ? e.eventDate|date('Y-m-d') : null,
                     'color': '#8F1402'
                 })|json_encode|raw }};
 
@@ -280,5 +239,4 @@
             }
         }
     </script>
-</body>
-</html>
+{% endblock %}
