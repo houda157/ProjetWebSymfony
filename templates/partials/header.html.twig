@@ -4,30 +4,30 @@
     {% set profileUrl = path('admin_dashboard') %}
 {% elseif is_granted('ROLE_CLUB_CONFIRMED') or is_granted('ROLE_CLUB_NOT_CONFIRMED') %}
     {% set profileUrl = path('club_show', {id: sessionUser.id}) %}
-{% else %}
-    {% set profileUrl = path('student_profile', {id: sessionUser.id}) %}
+{# {% else %}
+    {% set profileUrl = path('student_profile', {id: sessionUser.id}) %} #}
 {% endif %}
 
 <nav class="navbar-home">
 
     <div class="navbar-logo">
-        <a href="{{ path('app_home') }}">
+        {# <a href="{{ path('app_home') }}">
             <img src="{{ asset('images/logo.png') }}" alt="INSAT PULSE">
-        </a>
+        </a> #}
     </div>
 
     <div class="nav-icons">
-        <a href="{{ path('app_home') }}"
+        {# <a href="{{ path('app_home') }}"
            class="nav-icon-btn {{ app.request.attributes.get('_route') in ['app_home', 'admin_dashboard', 'club_feed', 'student_feed'] ? 'active' : '' }}"
            title="Home">
             <i class="bi bi-house-door-fill"></i>
-        </a>
+        </a> #}
 
-        <a href="{{ path('calendar') }}"
+        {# <a href="{{ path('calendar') }}"
            class="nav-icon-btn {{ app.request.attributes.get('_route') == 'calendar' ? 'active' : '' }}"
            title="Calendar">
             <i class="bi bi-calendar-event"></i>
-        </a>
+        </a> #}
     </div>
 
     <div class="navbar-search" style="position: relative;">

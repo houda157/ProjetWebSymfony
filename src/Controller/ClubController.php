@@ -15,6 +15,7 @@ use App\Entity\Follow;
 use App\Entity\User;
 use App\Repository\ClubRepository;
 use App\Repository\FollowRepository;
+use App\Form\ClubProfileType;
 use App\Service\FileUploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -52,7 +53,7 @@ class ClubController extends AbstractController
 
         // Remplace : $is_owner = ($session_id == $club_id)
         $isOwner = $currentUser && $currentUser->getId() === $id;
-
+        //$isOwner  = true; // Simplification pour le développement — à corriger plus tard
         // Remplace : $isFollowing = $followModel->isFollowing($session_id, $club_id)
         // Seulement pertinent pour les étudiants qui ne sont pas le propriétaire
         $isFollowing = false;
@@ -63,12 +64,22 @@ class ClubController extends AbstractController
             );
         }
 
+        $form = null;
+        if ($isOwner) {
+            $form = $this->createForm(ClubProfileType::class, $club, [
+                'action' => $this->generateUrl('club_edit', ['id' => $id]),
+                'method' => 'POST',
+                'csrf_token_id' => 'club_edit',
+            ])->createView();
+        }
+
         return $this->render('club/clubProfile.html.twig', [
             'club'        => $club,
             'events'      => $club->getEvents(),
             'followers'   => $club->getFollows(),
             'isOwner'     => $isOwner,
             'isFollowing' => $isFollowing,
+            'form'        => $form,
         ]);
     }
 
@@ -88,44 +99,42 @@ class ClubController extends AbstractController
         /** @var User $currentUser */
         $currentUser = $this->getUser();
 
-        // Remplace : if ($_SESSION['user']['id'] != $club_id) — vérification propriétaire
         if ($currentUser->getId() !== $id) {
             throw $this->createAccessDeniedException('Vous ne pouvez modifier que votre propre club.');
         }
 
-        // Vérification du token CSRF — Symfony exige ça sur les POST
-        $submittedToken = $request->request->get('_token');
-        if (!$this->isCsrfTokenValid('club_edit', $submittedToken)) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
+        $form = $this->createForm(ClubProfileType::class, $club, [
+            'csrf_token_id' => 'club_edit',
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $profileFile = $form->get('profileImgFile')->getData();
+            if ($profileFile) {
+                $path = $this->uploader->upload($profileFile, 'users/profile_img', (string) $id);
+                $club->getUser()->setProfileImg($path);
+            }
+
+            $coverFile = $form->get('coverImgFile')->getData();
+            if ($coverFile) {
+                $path = $this->uploader->upload($coverFile, 'users/cover_img', (string) $id);
+                $club->setCoverImg($path);
+            }
+
+            $this->em->flush();
+            $this->addFlash('success', 'Profil mis à jour avec succès !');
+
+            return $this->redirectToRoute('club_show', ['id' => $id]);
         }
-
-        // Remplace : $name = $_POST['name']; $category = $_POST['category']; etc.
-        $club->setName($request->request->get('name'));
-        $club->setCategory($request->request->get('category'));
-        $club->setDescription($request->request->get('description'));
-
-        // Remplace : if (isset($_FILES['profile_img']) && $_FILES['profile_img']['error'] === UPLOAD_ERR_OK)
-        $profileFile = $request->files->get('profile_img');
-        if ($profileFile) {
-            $path = $this->uploader->upload($profileFile, 'users/profile_img', (string) $id);
-            // L'image de profil vit sur User, pas sur Club
-            $club->getUser()->setProfileImg($path);
-        }
-
-        // Remplace : if (isset($_FILES['cover_img']) && $_FILES['cover_img']['error'] === UPLOAD_ERR_OK)
-        $coverFile = $request->files->get('cover_img');
-        if ($coverFile) {
-            $path = $this->uploader->upload($coverFile, 'users/cover_img', (string) $id);
-            $club->setCoverImg($path);
-        }
-
-        $this->em->flush();
-
-        // Remplace : header("Location: club.php?success=1"); exit();
-        // addFlash() remplace la query string ?success=1 — affiché par base.html.twig
-        $this->addFlash('success', 'Profil mis à jour avec succès !');
-
-        return $this->redirectToRoute('club_show', ['id' => $id]);
+        $isOwner = $currentUser->getId() === $id;
+        return $this->render('club/clubProfile.html.twig', [
+            'club'        => $club,
+            'events'      => $club->getEvents(),
+            'followers'   => $club->getFollows(),
+            'isOwner'     => $isOwner,
+            'isFollowing' => false,
+            'form'        => $form->createView(),
+        ]);
     }
 
     // ────────────────────────────────────────────────────────────────────────

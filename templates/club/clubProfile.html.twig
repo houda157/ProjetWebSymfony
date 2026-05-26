@@ -82,6 +82,7 @@
                             </a>
                         {% endif %}
                     </div>
+                    
 
                     <div id="posts-feed">
                         {% if events|length > 0 %}
@@ -133,25 +134,45 @@
                             <h2 class="panel-title">Profile Settings</h2>
                         </div>
 
-                        <form action="{{ path('club_edit', {id: club.user.id}) }}"
-                              method="POST"
-                              enctype="multipart/form-data">
+                        {{ form_start(form, {
+                            attr: { 'enctype': 'multipart/form-data' }
+                        }) }}
 
-                            <input type="hidden" name="_token" value="{{ csrf_token('club_edit') }}">
+                            {{ form_errors(form) }}
 
                             {# Profile image + upload stylé #}
                             <div class="text-center mb-4">
                                 <img src="{{ club.user.profileImg ? asset('uploads/' ~ club.user.profileImg) : 'https://placehold.co/120x120?text=Profile' }}"
                                      alt="Profile"
                                      class="rounded-circle mb-3 profile-edit-img"
-                >
+                                >
 
                                 <div class="mb-3">
                                     <label for="profile_img" class="upload-label">
                                         <i class="bi bi-cloud-arrow-up"></i>
                                         <span id="profileFileLabel">Click to change profile photo</span>
                                     </label>
-                                    <input type="file" name="profile_img" id="profile_img" accept="image/*" style="display:none;">
+                                    {{ form_widget(form.profileImgFile, {
+                                        attr: {
+                                            'class': 'd-none',
+                                            'accept': 'image/*',
+                                            'id': 'profile_img'
+                                        }
+                                    }) }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="cover_img" class="upload-label">
+                                        <i class="bi bi-cloud-arrow-up"></i>
+                                        <span id="coverFileLabel">Click to change cover photo</span>
+                                    </label>
+                                    {{ form_widget(form.coverImgFile, {
+                                        attr: {
+                                            'class': 'd-none',
+                                            'accept': 'image/*',
+                                            'id': 'cover_img'
+                                        }
+                                    }) }}
                                 </div>
                             </div>
 
@@ -160,17 +181,17 @@
                                     <label class="form-label fw-semibold text-muted">Club Name</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-pencil"></i></span>
-                                        <input type="text" name="name" class="form-control"
-                                               value="{{ club.name }}" required>
+                                        {{ form_widget(form.name, { 'attr': { 'class': 'form-control' } }) }}
                                     </div>
+                                    {{ form_errors(form.name) }}
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-semibold text-muted">Category</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-tag"></i></span>
-                                        <input type="text" name="category" class="form-control"
-                                               value="{{ club.category ?? '' }}">
+                                        {{ form_widget(form.category, { 'attr': { 'class': 'form-control' } }) }}
                                     </div>
+                                    {{ form_errors(form.category) }}
                                 </div>
                             </div>
 
@@ -178,8 +199,9 @@
                                 <label class="form-label fw-semibold text-muted">Description</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-card-text"></i></span>
-                                    <textarea name="description" class="form-control" rows="4">{{ club.description ?? '' }}</textarea>
+                                    {{ form_widget(form.description, { 'attr': { 'class': 'form-control', 'rows': 4 } }) }}
                                 </div>
+                                {{ form_errors(form.description) }}
                             </div>
 
                             <div class="d-grid mt-4 mb-3">
@@ -187,7 +209,9 @@
                                     <i class="bi bi-check-lg me-2"></i> Save Changes
                                 </button>
                             </div>
-                        </form>
+
+                            {{ form_rest(form) }}
+                        {{ form_end(form) }}
                     </div>
                 {% endif %}
 
@@ -202,10 +226,21 @@
 
     <script>
         {% if isOwner %}
-        document.getElementById('profile_img').addEventListener('change', function () {
-            document.getElementById('profileFileLabel').textContent =
-                this.files[0] ? this.files[0].name : 'Click to change profile photo';
-        });
+        const profileImg = document.getElementById('profile_img');
+        if (profileImg) {
+            profileImg.addEventListener('change', function () {
+                document.getElementById('profileFileLabel').textContent =
+                    this.files[0] ? this.files[0].name : 'Click to change profile photo';
+            });
+        }
+
+        const coverImg = document.getElementById('cover_img');
+        if (coverImg) {
+            coverImg.addEventListener('change', function () {
+                document.getElementById('coverFileLabel').textContent =
+                    this.files[0] ? this.files[0].name : 'Click to change cover photo';
+            });
+        }
         {% endif %}
 
         let calendarRendered = false;
