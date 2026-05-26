@@ -33,6 +33,7 @@ class FeedController extends AbstractController
                     $upcoming[] = $event;
                 }
             }
+            usort($upcoming, fn($a, $b) => $a->getEventDate() <=> $b->getEventDate());
         }
 
         return $this->render('feed/index.html.twig', [
@@ -85,9 +86,22 @@ class FeedController extends AbstractController
     }
 
     #[Route('/calendar', name: 'calendar')]
-    public function calendar(): Response
+    public function calendar(EventRepository $eventRepo): Response
     {
-        return $this->redirectToRoute('app_home');
+        $events = $eventRepo->findBy([], ['eventDate' => 'ASC']);
+
+        $calendarEvents = [];
+        foreach ($events as $event) {
+            $calendarEvents[] = [
+                'title' => $event->getTitle() . ' — ' . $event->getClub()->getName(),
+                'start' => $event->getEventDate()->format('Y-m-d'),
+                'color' => '#8F1402'
+            ];
+        }
+
+        return $this->render('feed/calendar.html.twig', [
+            'calendarEvents' => $calendarEvents
+        ]);
     }
 
     #[Route('/search', name: 'do_search')]
