@@ -251,9 +251,9 @@
 
             document.getElementById('panel-myposts').classList.add('d-none');
             document.getElementById('panel-calendar').classList.add('d-none');
-            {% if isOwner %}
+            {#% if isOwner %#}
             document.getElementById('panel-profile').classList.add('d-none');
-            {% endif %}
+            {#% endif %#}
 
             document.getElementById('panel-' + btn.dataset.panel).classList.remove('d-none');
 
