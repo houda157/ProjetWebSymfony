@@ -17,13 +17,6 @@
 
                     <h1 class="login-text">Login your account</h1>
 
-                    {% if app.user %}
-                        <div class="alert alert-info">
-                            You are logged in as {{ app.user.userIdentifier }}.
-                            <a href="{{ path('app_logout') }}">Logout</a>
-                        </div>
-                    {% endif %}
-
                     <form class="login-form" action="{{ path('app_login') }}" method="post">
                         <div class="frame-4">
                             <div class="frame-2">
