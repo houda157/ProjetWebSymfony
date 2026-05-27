@@ -1,0 +1,91 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card p-3"> {# padding 3 distance ktiba par rapport bordure#}
+            
+                <img src="{{ student.user.profileImg ? '/uploads/' ~ student.user.profileImg : '/images/default3.png' }}"
+                    class="rounded-circle mx-auto d-block mb-3"
+                    style="width:110px; height:110px; object-fit:cover;">
+                {#FileUploadService retourne "users/profile_img/3.jpg" #}
+                {#et c est la forme de profileilg #}
+
+
+                <h5>{{ student.fullname }}</h5>
+                <p>{{ student.user.email }}</p>
+                <p>{{ student.major }}</p>
+                <p>{{ student.birthday ? student.birthday|date('d/m/Y') }}</p>
+
+                <button class="btn btn-outline-danger mb-2" onclick="switchPanel('profile')">My Profile</button>
+                <button class="btn btn-outline-danger mb-2" onclick="switchPanel('clubs')">Followed Clubs</button>
+                <button class="btn btn-outline-danger" onclick="switchPanel('events')">Liked Events</button>
+            </div>
+        </div>
+
+        <!-- Main -->
+        <div class="col-md-9">
+            <div class="card p-4">
+                <!-- Edit Profile -->
+                <div id="panel-profile">
+                    <h4>Edit My Profile</h4>
+
+                    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+                        {{ form_row(form.fullname) }}
+                        {{ form_row(form.major) }}
+                        {{ form_row(form.birthday) }}
+                        {{ form_row(form.photoFile) }}
+                        <button type="submit" class="btn btn-danger">Save Changes</button>
+                    {{ form_end(form) }}
+                </div>
+
+                <!-- Followed Clubs -->
+                <div id="panel-clubs" class="d-none">
+                    <h4>Followed Clubs</h4>
+                    {% for follow in student.follows %} {# one to many #}
+                        <div class="card p-3 mb-2">
+                            <a href="{{ path('club_show', {id: follow.club.user.id}) }}" class="text-decoration-none text-dark">
+                                <h6 class="mb-0">{{ follow.club.name }}</h6>
+                            </a>
+                        </div>
+                    {% else %}
+                        <p>No clubs followed yet.</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Liked Events -->
+                <div id="panel-events" class="d-none">
+                    <h4>Liked Events</h4>
+                    {% for like in student.likes %} {# one to many #}
+                        <div class="card p-3 mb-2">
+                            <a href="{{ path('event_show', {id: like.event.id}) }}" class="text-decoration-none text-dark">
+                                <h6 class="mb-0">{{ like.event.title }}</h6>
+                            </a>
+                        </div>
+                    {% else %}
+                        <p>No liked events yet.</p>
+                    {% endfor %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function switchPanel(panel) {
+    document.getElementById('panel-profile').classList.add('d-none');
+    document.getElementById('panel-clubs').classList.add('d-none');
+    document.getElementById('panel-events').classList.add('d-none');
+    document.getElementById('panel-' + panel).classList.remove('d-none');
+    {# <div id="panel-clubs" class="d-none card p-3"> #}
+}
+</script>
+{% endblock %}
