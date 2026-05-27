@@ -2,12 +2,14 @@
 
 namespace App\Controller;
 
+use App\Repository\ClubRepository;
 use App\Repository\EventRepository;
 use App\Repository\LikeRepository;
 use App\Repository\StudentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -48,6 +50,7 @@ class FeedController extends AbstractController
     #[Route('/like/{id}', name: 'app_like', methods: ['POST'])]
     public function like(
         int $id,
+        Request $request,
         EventRepository $eventRepo,
         LikeRepository $likeRepo,
         StudentRepository $studentRepo,
@@ -76,7 +79,44 @@ class FeedController extends AbstractController
         }
 
         $em->flush();
+
+        $referer = $request->headers->get('referer');
+        if ($referer) {
+            return $this->redirect($referer);
+        }
         return $this->redirectToRoute('app_home');
+    }
+
+    #[Route('/event/{id}', name: 'event_show')]
+    public function eventShow(
+        int $id,
+        EventRepository $eventRepo,
+        LikeRepository $likeRepo,
+        StudentRepository $studentRepo
+    ): Response {
+        $event = $eventRepo->find($id);
+
+        if (!$event) {
+            throw $this->createNotFoundException('Event introuvable.');
+        }
+
+        $user = $this->getUser();
+        $student = $user ? $studentRepo->findOneBy(['user' => $user]) : null;
+        $hasLiked = false;
+        $likeCount = count($event->getLikes());
+
+        if ($student) {
+            $hasLiked = (bool) $likeRepo->findOneBy([
+                'student' => $student,
+                'event'   => $event,
+            ]);
+        }
+
+        return $this->render('feed/event.html.twig', [
+            'event'     => $event,
+            'hasLiked'  => $hasLiked,
+            'likeCount' => $likeCount,
+        ]);
     }
 
     #[Route('/student/profile/{id}', name: 'student_profile')]
@@ -105,8 +145,45 @@ class FeedController extends AbstractController
     }
 
     #[Route('/search', name: 'do_search')]
-    public function search(): JsonResponse
-    {
-        return new JsonResponse(['clubs' => [], 'events' => []]);
+    public function search(
+        Request $request,
+        EventRepository $eventRepo,
+        ClubRepository $clubRepo
+    ): JsonResponse {
+        $q = trim($request->query->get('q', ''));
+
+        if (strlen($q) < 1) {
+            return new JsonResponse(['clubs' => [], 'events' => []]);
+        }
+
+        $clubs = $clubRepo->createQueryBuilder('c')
+            ->where('c.name LIKE :q')
+            ->setParameter('q', '%' . $q . '%')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
+
+        $events = $eventRepo->createQueryBuilder('e')
+            ->where('e.title LIKE :q')
+            ->setParameter('q', '%' . $q . '%')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
+
+        $clubsData = array_map(fn($c) => [
+            'id'   => $c->getUser()->getId(),
+            'name' => $c->getName(),
+        ], $clubs);
+
+        $eventsData = array_map(fn($e) => [
+            'id'         => $e->getId(),
+            'title'      => $e->getTitle(),
+            'event_date' => $e->getEventDate()->format('d/m/Y'),
+        ], $events);
+
+        return new JsonResponse([
+            'clubs'  => $clubsData,
+            'events' => $eventsData,
+        ]);
     }
 }
