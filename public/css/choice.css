@@ -1,0 +1,123 @@
+@font-face {
+  font-family: 'Inter Regular';
+  src: url(../fonts/Inter&poppins/Inter/static/Inter_18pt-Regular.ttf);
+}
+@font-face {
+  font-family: 'Inter Medium';
+  src: url(../fonts/Inter&poppins/Inter/static/Inter_18pt-Medium.ttf);
+}
+@font-face {
+  font-family: 'Inter ExtraLight';
+  src: url(../fonts/Inter&poppins/Inter/static/Inter_18pt-ExtraLight.ttf);
+}
+@font-face {
+  font-family: 'Inter ExtraBold';
+  src: url(../fonts/Inter&poppins/Inter/static/Inter_18pt-ExtraBold.ttf);
+}
+
+
+.right-section {
+    background-image: url('../images/insatshadow.png');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 5vh 5vw;
+}
+
+.right-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
+.quote{
+  font-size: 45px;
+  font-family: Inter ExtraLight;
+  color: white;
+  text-align: center;
+}
+.login-ref{
+    font-family: 'Inter ExtraLight';
+    font-size: 30px;
+    color:black;
+    display: flex;
+    position: relative;
+    padding: 1.5vh 1.5vw;
+}
+.login-ref:hover{
+    color: black;
+}
+
+.logo{
+  background-image: url("../images/logo.png");
+  background-position: center;
+  background-size: 45%;
+  background-repeat: no-repeat;
+}
+.logo-container{
+  height:35vh;
+  margin-top: -5%;
+}
+.create-account{
+  text-align: center;
+  color: #8F1402;
+  font-size: 40.61px;
+  font-family: 'Inter ExtraBold';
+  margin-top: -7%;
+  margin-bottom: 5%;
+}
+.choice-btn{
+  background-color: white;
+  border-color: #8F1402;
+  border-radius: 20px;
+  border-width: 3px;
+  font-size: 40.61px;
+  font-family: 'Inter ExtraBold';
+  color: black;
+  box-shadow: -5px 5px 15px 6px rgb(205, 202, 202);
+}
+.choice-btn:hover{
+  background-color: white;
+  color: #8F1402;
+  border-color: #8F1402;
+}
+.login-now{
+  color: #8F1402;
+  border-radius: 50px;
+}
+.login-now:hover{
+  cursor: pointer;
+}
+.al{
+  font-family: 'Inter ExtraLight';
+  font-size: 25px;
+  text-wrap: nowrap;
+  text-align: center;
+}
+
+.txt2{
+  margin-top: 5%;
+}
+
+@media only screen and (max-width:990px){
+  .right-section{
+    display: none;
+  }
+}
+
+@media only screen and (max-width:576px){
+  .al{
+    text-wrap: wrap;
+  }
+  .logo{
+      background-size: 70%;
+  }
+}

@@ -4,8 +4,8 @@ namespace App\Enum;
 
 enum UserRole: string
 {
-    case STUDENT = 'student';
-    case CLUB_CONFIRMED = 'club_Confirmed';
-    case ADMIN = 'admin';
-    case CLUB_NOT_CONFIRMED = 'club_NotConfirmed';
+    case STUDENT = 'ROLE_STUDENT';
+    case CLUB_CONFIRMED = 'ROLE_CLUB_CONFIRMED';
+    case ADMIN = 'ROLE_ADMIN';
+    case CLUB_NOT_CONFIRMED = 'ROLE_CLUB_NOT_CONFIRMED';
 }

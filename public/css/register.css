@@ -1,0 +1,227 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #ffffff;
+}
+
+.register-shell {
+    min-height: 100vh;
+}
+
+.register-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    min-height: 100vh;
+}
+
+.register-left {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 32px;
+    background: #ffffff;
+}
+
+.form-container {
+    width: min(100%, 420px);
+}
+
+.register-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+.register-logo img {
+    width: min(220px, 48vw);
+    height: auto;
+}
+
+.register-title,
+.form-title {
+    margin: 0 0 28px;
+    color: #8f1402;
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1.15;
+    text-align: center;
+}
+
+.choice-stack {
+    display: grid;
+    gap: 18px;
+    width: min(100%, 420px);
+}
+
+.choice-btn {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    width: 100%;
+    min-height: 76px;
+    padding: 16px 24px;
+    color: #111111;
+    background: rgba(217, 217, 217, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.55);
+    border-radius: 999px;
+    font-size: 22px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.choice-btn:hover {
+    color: #8f1402;
+    background: #ffffff;
+    border-color: #8f1402;
+    transform: translateY(-1px);
+}
+
+.choice-icon {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    object-fit: contain;
+}
+
+.registration-form {
+    display: grid;
+    gap: 16px;
+}
+
+.form-group {
+    display: grid;
+    gap: 7px;
+}
+
+.form-group label {
+    color: #111111;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.form-group input {
+    width: 100%;
+    min-height: 50px;
+    padding: 0 18px;
+    color: #111111;
+    background: rgba(217, 217, 217, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.7);
+    border-radius: 999px;
+    font: inherit;
+    outline: none;
+}
+
+.form-group input:focus {
+    background: #ffffff;
+    border-color: #8f1402;
+    box-shadow: 0 0 0 3px rgba(143, 20, 2, 0.12);
+}
+
+.form-error {
+    display: block;
+    color: #b42318;
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.form-hint {
+    display: none;
+}
+
+.submit-btn {
+    width: fit-content;
+    min-width: 150px;
+    min-height: 50px;
+    justify-self: end;
+    padding: 0 30px;
+    color: #ffffff;
+    background: #8f1402;
+    border: 0;
+    border-radius: 999px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.submit-btn:hover {
+    background: #6b0f01;
+    transform: translateY(-1px);
+}
+
+.auth-switch {
+    margin: 24px 0 0;
+    color: #111111;
+    font-size: 16px;
+    text-align: center;
+}
+
+.auth-switch a {
+    color: #8f1402;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+.register-right {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 13vh 42px 42px;
+    overflow: hidden;
+    background: linear-gradient(rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.42)), url("../images/insatshadow.png") center / cover no-repeat;
+}
+
+.register-right h2 {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(30px, 4vw, 56px);
+    font-weight: 200;
+    line-height: 1.35;
+    text-align: center;
+    text-shadow: 0 3px 18px rgba(0, 0, 0, 0.65);
+}
+
+.register-choice .register-left {
+    flex-direction: column;
+}
+
+@media (max-width: 991px) {
+    .register-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .register-left {
+        min-height: auto;
+        padding: 28px 20px;
+    }
+
+    .register-right {
+        min-height: 280px;
+        padding: 52px 20px;
+    }
+
+    .register-title,
+    .form-title {
+        font-size: 28px;
+    }
+
+    .choice-btn {
+        min-height: 66px;
+        font-size: 19px;
+    }
+}

@@ -1,0 +1,98 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}INSAT Pulse - Register Student{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/register.css') }}">
+{% endblock %}
+
+{% block body %}
+    <main class="register-shell">
+        <div class="register-panel">
+            <section class="register-left">
+                <div class="form-container">
+                    <div class="register-logo">
+                        <img src="{{ asset('images/logo.png') }}" alt="INSAT Pulse Logo">
+                    </div>
+
+                    <h1 class="form-title">Create a student account</h1>
+
+                    {% if errors._global is defined %}
+                        <small class="form-error">{{ errors._global }}</small>
+                    {% endif %}
+
+                    <form class="registration-form" action="{{ path('app_register_student') }}" method="post">
+                        <input type="hidden" name="_token" value="{{ csrf_token('register_student') }}">
+
+                        <div class="form-group">
+                            <label for="fullname">Full name</label>
+                            <input type="text" id="fullname" name="fullname" value="{{ data.fullname }}" required>
+                            {% if errors.fullname is defined %}
+                                <small class="form-error">{{ errors.fullname }}</small>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" name="username" value="{{ data.username }}" required>
+                            {% if errors.username is defined %}
+                                <small class="form-error">{{ errors.username }}</small>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input id="email" type="email" name="email" value="{{ data.email }}" required>
+                            {% if errors.email is defined %}
+                                <small class="form-error">{{ errors.email }}</small>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input id="password" type="password" name="password" required>
+                            <small id="password-weak" class="form-error form-hint">Password must have at least 8 characters.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="repeat-password">Repeat password</label>
+                            <input id="repeat-password" name="repeat-password" type="password" required>
+                            <small id="password-mismatch" class="form-error form-hint">Verify your password.</small>
+                            {% if errors.password is defined %}
+                                <small class="form-error">{{ errors.password }}</small>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="submit-btn">Create</button>
+                    </form>
+
+                    <p class="auth-switch">
+                        Already have an account?
+                        <a href="{{ path('app_login') }}">Login now</a>
+                    </p>
+                </div>
+            </section>
+
+            <section class="register-right">
+                <h2>WHERE TODAY'S IDEAS TURN<br>INTO TOMORROW'S REALITY</h2>
+            </section>
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        const passwordInput = document.getElementById('password');
+        const repeatInput = document.getElementById('repeat-password');
+        const weakMessage = document.getElementById('password-weak');
+        const mismatchMessage = document.getElementById('password-mismatch');
+
+        function validatePasswordPreview() {
+            weakMessage.style.display = passwordInput.value.length > 0 && passwordInput.value.length < 8 ? 'block' : 'none';
+            mismatchMessage.style.display = repeatInput.value.length > 0 && passwordInput.value !== repeatInput.value ? 'block' : 'none';
+        }
+
+        passwordInput.addEventListener('input', validatePasswordPreview);
+        repeatInput.addEventListener('input', validatePasswordPreview);
+    </script>
+{% endblock %}

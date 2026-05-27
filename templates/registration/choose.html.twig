@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Choice</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/choice.css') }}">
+</head>
+
+<body>
+    <main>
+        <div class="container-fluid">
+            <div class="row g-2">
+                <div class="col-lg-6 col-12">
+                    <div class="row logo-container">
+                        <div class="logo"></div>
+                    </div>
+
+                    <div class="row justify-content-center align-items-center g-2">
+                        <p class="create-account">Choose account type</p>
+                    </div>
+
+                    <div class="row justify-content-center align-items-center gap-4">
+                        <button type="button" name="Club" class="choice-btn col-7" onclick="window.location.href='{{ path('app_register_club') }}'">
+                            <img src="{{ asset('images/h 1.png') }}" alt="">
+                            Club
+                        </button>
+
+                        <button type="button" name="Student" class="choice-btn col-7" onclick="window.location.href='{{ path('app_register_student') }}'">
+                            <img src="{{ asset('images/h 2.png') }}" alt="">
+                            Student
+                        </button>
+                    </div>
+
+                    <div class="row txt2 justify-content-center align-items-center">
+                        <div class="col-8 al justify-content-center align-items-center">
+                            Already have an account?
+                            <span class="login-now" onclick="window.location.href='{{ path('app_login') }}'">Login now</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="row right-section justify-content-center align-items-center">
+                        <div class="col-12">
+                            <h1 class="quote">WHERE TODAY’S IDEAS TURN <br>INTO TOMORROW’S REALITY</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
