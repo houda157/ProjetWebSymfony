@@ -2,7 +2,9 @@
 
 namespace App\Repository;
 
+use App\Entity\Club;
 use App\Entity\Follow;
+use App\Entity\Student;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,6 +17,17 @@ class FollowRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Follow::class);
     }
+
+    public function isFollowing(Student $student, Club $club): bool
+    {
+        $result = $this->findOneBy([
+            'student' => $student,
+            'club'    => $club,
+        ]);
+
+        return $result !== null;
+    }
+}
 
 //    /**
 //     * @return Follow[] Returns an array of Follow objects
@@ -40,4 +53,4 @@ class FollowRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
-}
+
