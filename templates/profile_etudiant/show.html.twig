@@ -9,9 +9,14 @@
         <!-- Sidebar -->
         <div class="col-md-3">
             <div class="card p-3"> {# padding 3 distance ktiba par rapport bordure#}
-                <img src="{{ student.user.profileImg ? '/uploads/users/' ~ student.user.profileImg : '/images/default3.png' }}"
+            
+                <img src="{{ student.user.profileImg ? '/uploads/' ~ student.user.profileImg : '/images/default3.png' }}"
                     class="rounded-circle mx-auto d-block mb-3"
-                    style="width:80px;">
+                    style="width:110px; height:110px; object-fit:cover;">
+                {#FileUploadService retourne "users/profile_img/3.jpg" #}
+                {#et c est la forme de profileilg #}
+
+
                 <h5>{{ student.fullname }}</h5>
                 <p>{{ student.user.email }}</p>
                 <p>{{ student.major }}</p>
@@ -26,11 +31,17 @@
         <!-- Main -->
         <div class="col-md-9">
             <div class="card p-4">
-
                 <!-- Edit Profile -->
                 <div id="panel-profile">
                     <h4>Edit My Profile</h4>
-                    <a href="#" class="btn btn-danger">Edit Profile</a>
+
+                    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+                        {{ form_row(form.fullname) }}
+                        {{ form_row(form.major) }}
+                        {{ form_row(form.birthday) }}
+                        {{ form_row(form.photoFile) }}
+                        <button type="submit" class="btn btn-danger">Save Changes</button>
+                    {{ form_end(form) }}
                 </div>
 
                 <!-- Followed Clubs -->
