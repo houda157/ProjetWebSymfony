@@ -39,7 +39,7 @@ class ClubController extends AbstractController
     // ────────────────────────────────────────────────────────────────────────
     // Remplace : public/club.php (partie GET — affichage du profil)
     // ────────────────────────────────────────────────────────────────────────
-    #[Route('/club/{id}', name: 'club_show', methods: ['GET'])]
+    #[Route('/club/{id}', name: 'club_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(int $id): Response
     {
         // Remplace : $club = $clubModel->findById($club_id)
@@ -88,7 +88,7 @@ class ClubController extends AbstractController
     // ────────────────────────────────────────────────────────────────────────
     // Remplace : public/club.php (partie POST — update_profile)
     // ────────────────────────────────────────────────────────────────────────
-    #[Route('/club/{id}/edit', name: 'club_edit', methods: ['POST'])]
+    #[Route('/club/{id}/edit', name: 'club_edit', requirements: ['id' => '\d+'], methods: ['POST'])]
     #[IsGranted('ROLE_CLUB_CONFIRMED')]
     public function updateProfile(int $id, Request $request): Response
     {
@@ -143,7 +143,7 @@ class ClubController extends AbstractController
     // Remplace : public/actions/do-follow.php
     // Toggle Follow / Unfollow — seuls les étudiants peuvent suivre
     // ────────────────────────────────────────────────────────────────────────
-    #[Route('/club/{id}/follow', name: 'club_follow_toggle', methods: ['POST'])]
+    #[Route('/club/{id}/follow', name: 'club_follow_toggle', requirements: ['id' => '\d+'], methods: ['POST'])]
     #[IsGranted('ROLE_STUDENT')]
     public function toggleFollow(int $id, Request $request): Response
     {
@@ -187,19 +187,15 @@ class ClubController extends AbstractController
 
         return $this->redirectToRoute('club_show', ['id' => $id]);
     }
-    #[Route('/club/{id}/feed',name:'club_feed',methods:['GET'])]
-    //#[IsGranted('ROLE_CLUB_CONFIRMED')]
-    public function feedShow(int $id):Response
+    #[Route('/club/feed',name:'club_feed',methods:['GET'])]
+    #[IsGranted('ROLE_CLUB_CONFIRMED')]
+    public function feedShow():Response
     {
-        $club=$this->clubRepo->findByUserId($id);
-        if(!$club){
-            throw $this->createNotFoundException('Club introuvable.');
-        }
         $posts=$this->eventRepo->getAllPosts();
         //dd($posts);
         return $this->render('club/clubFeed.html.twig',[
-            'club'=>$club,
-            'events'=>$posts,
+
+            'events'=>$posts
             
         ]);
     }
