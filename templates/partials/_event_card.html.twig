@@ -12,8 +12,11 @@
    • Autre club / visiteur    → compteur de likes en lecture seule
 #}
 
-{% set isOwner = isOwner|default(false) %}
-{% set isFeed  = isFeed|default(false) %}
+{% set isOwner     = isOwner|default(false) %}
+{% set isFeed      = isFeed|default(false) %}
+{% set isLiked     = isLiked|default(false) %}
+{% set isFollowing = isFollowing|default(false) %}
+
 
 <article class="event-card">
 
@@ -30,6 +33,19 @@
                     <span class="event-card-club-handle">@{{ event.club.user.username }}</span>
                 </div>
             </a>
+
+            {% if is_granted('ROLE_STUDENT') %}
+                <form action="{{ path('club_follow_toggle', {id: event.club.user.id}) }}" method="POST">
+                    <input type="hidden" name="_token" value="{{ csrf_token('follow' ~ event.club.user.id) }}">
+                    <button type="submit" class="ec-btn-follow {{ isFollowing ? 'following' : '' }}">
+                        {% if isFollowing %}
+                            <i class="bi bi-check-lg"></i> Following
+                        {% else %}
+                            <i class="bi bi-plus-lg"></i> Follow
+                        {% endif %}
+                    </button>
+                </form>
+            {% endif %}
         </div>
     {% endif %}
 
@@ -68,9 +84,14 @@
                 </form>
 
             {% elseif is_granted('ROLE_STUDENT') %}
-                <span class="ec-likes-readonly">
-                    <i class="bi bi-heart-fill"></i> {{ event.likes|length }}
-                </span>
+                <form action="{{ path('app_like', {id: event.id}) }}" method="POST" class="d-inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('like' ~ event.id) }}">
+                    <button type="submit" class="ec-btn-like {{ isLiked ? 'liked' : '' }}">
+                        <i class="bi bi-heart{{ isLiked ? '-fill' : '' }}"></i>
+                        {{ isLiked ? 'Unlike' : 'Like' }}
+                        <span class="ec-like-count">{{ event.likes|length }}</span>
+                    </button>
+                </form>
 
             {% else %}
                 <span class="ec-likes-readonly">

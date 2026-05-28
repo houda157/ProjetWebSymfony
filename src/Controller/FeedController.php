@@ -16,11 +16,15 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class FeedController extends AbstractController
 {
+    public function _construct(){
+        /// 3abihom
+    }
     #[Route('/', name: 'app_home')]
     #[Route('/', name: 'app_feed')]
+    //is granted for student only
+    #[IsGranted('ROLE_STUDENT')]
     public function index(
         EventRepository $eventRepo,
-        LikeRepository $likeRepo,
         StudentRepository $studentRepo
     ): Response {
         $user    = $this->getUser();
@@ -28,26 +32,34 @@ class FeedController extends AbstractController
         $events  = $eventRepo->findBy([], ['eventDate' => 'DESC']);
         $now     = new \DateTime();
 
-        $upcoming = [];
+        $likedEventIds       = [];
+        $followedClubUserIds = [];
+        $upcoming            = [];
+
         if ($student) {
             foreach ($student->getLikes() as $like) {
                 $event = $like->getEvent();
+                $likedEventIds[] = $event->getId();
                 if ($event->getEventDate() > $now) {
                     $upcoming[] = $event;
                 }
+            }
+            foreach ($student->getFollows() as $follow) {
+                $followedClubUserIds[] = $follow->getClub()->getUser()->getId();
             }
             usort($upcoming, fn($a, $b) => $a->getEventDate() <=> $b->getEventDate());
         }
 
         return $this->render('feed/index.html.twig', [
-            'events'   => $events,
-            'upcoming' => $upcoming,
-            'student'  => $student,
-            'likeRepo' => $likeRepo,
-            'now'      => $now,
+            'events'              => $events,
+            'upcoming'            => $upcoming,
+            'student'             => $student,
+            'likedEventIds'       => $likedEventIds,
+            'followedClubUserIds' => $followedClubUserIds,
+            'now'                 => $now,
         ]);
     }
-
+// chnage this to like controller
     #[Route('/like/{id}', name: 'app_like', methods: ['POST'])]
     #[IsGranted('ROLE_STUDENT')]
     public function like(
@@ -88,7 +100,7 @@ class FeedController extends AbstractController
         }
         return $this->redirectToRoute('app_home');
     }
-
+// go to event controller
     #[Route('/event/{id}', name: 'event_show')]
     public function eventShow(
         int $id,
@@ -120,13 +132,14 @@ class FeedController extends AbstractController
             'likeCount' => $likeCount,
         ]);
     }
+// normalement zeyed
+    // #[Route('/student/profile/{id}', name: 'student_profile')]
+    // public function studentProfile(int $id): Response
+    // {
+    //     return $this->redirectToRoute('app_home');
+    // }
 
-    #[Route('/student/profile/{id}', name: 'student_profile')]
-    public function studentProfile(int $id): Response
-    {
-        return $this->redirectToRoute('app_home');
-    }
-
+    //make a caledner controller
     #[Route('/calendar', name: 'calendar')]
     public function calendar(EventRepository $eventRepo): Response
     {
@@ -146,6 +159,7 @@ class FeedController extends AbstractController
         ]);
     }
 
+//evetn controller
     #[Route('/search', name: 'do_search')]
     public function search(
         Request $request,
@@ -157,7 +171,7 @@ class FeedController extends AbstractController
         if (strlen($q) < 1) {
             return new JsonResponse(['clubs' => [], 'events' => []]);
         }
-
+//query in the repository
         $clubs = $clubRepo->createQueryBuilder('c')
             ->where('c.name LIKE :q')
             ->setParameter('q', '%' . $q . '%')
