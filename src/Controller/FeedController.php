@@ -16,19 +16,18 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class FeedController extends AbstractController
 {
-    public function _construct(){
+    public function __construct(){
         /// 3abihom
     }
     #[Route('/', name: 'app_home')]
     #[Route('/', name: 'app_feed')]
     //is granted for student only
-    #[IsGranted('ROLE_STUDENT')]
+    //#[IsGranted('ROLE_STUDENT')]
     public function index(
         EventRepository $eventRepo,
         StudentRepository $studentRepo
     ): Response {
-        $user    = $this->getUser();
-        $student = $user ? $studentRepo->findOneBy(['user' => $user]) : null;
+        $student=$studentRepo->find(1);
         $events  = $eventRepo->findBy([], ['eventDate' => 'DESC']);
         $now     = new \DateTime();
 
