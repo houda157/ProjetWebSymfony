@@ -1,72 +1,82 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}INSAT Pulse - Feed{% endblock %}
+{% block title %}INSAT Pulse – Feed{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/student.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/event.css') }}">
+{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="row">
+<div class="page-body">
+    <div class="row g-4">
 
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-header" style="background-color:#8F1402; color:white;">
-                    <h5 class="mb-0">Upcoming Schedule</h5>
-                </div>
-                <div class="card-body">
-                    {% if upcoming is empty %}
-                        <p class="text-muted">No liked upcoming events yet.</p>
-                    {% else %}
-                        {% for ev in upcoming %}
-                            <div class="mb-2">
-                                <strong>{{ ev.title }}</strong><br>
-                                <small>{{ ev.eventDate|date('d/m/Y') }}</small>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+        {# ── EVENTS FEED ────────────────────────────────────── #}
+        <div class="col-12 col-lg-8">
 
-        <div class="col-md-9">
             {% if events is empty %}
-                <p>No posts yet.</p>
+                <div class="blank-panel">
+                    <i class="bi bi-megaphone text-secondary" style="font-size:2.5rem;"></i>
+                    <span class="text-secondary">No posts yet.</span>
+                </div>
             {% else %}
                 {% for event in events %}
-                    {% set isLiked = student ? likeRepo.findOneBy({'student': student, 'event': event}) : false %}
-                    {% set isPast  = event.eventDate < now %}
-
-                    <div class="card mb-3 border-0 shadow-sm" style="border-radius:15px;">
-                        {% if event.image %}
-                            <img src="{{ asset('uploads/' ~ event.image) }}" class="card-img-top" style="max-height:300px; object-fit:cover; border-radius:15px 15px 0 0;">
-                        {% endif %}
-                        <div class="card-body">
-                            <h5 class="fw-bold">{{ event.title }}</h5>
-
-                            {% if isPast %}
-                                <span class="badge mb-2" style="background-color:#8F1402;">
-                                    <i class="bi bi-clock-history me-1"></i> Event already passed
-                                </span>
-                            {% endif %}
-
-                            <p>{{ event.description }}</p>
-                            <small>
-                                <span style="color:#8F1402; font-weight:600;">
-                                    {{ event.club.name }}
-                                </span> |
-                                {{ event.eventDate|date('Y-m-d H:i') }}
-                            </small>
-
-                            <div class="d-flex gap-2 mt-2">
-                                <form action="{{ path('app_like', {id: event.id}) }}" method="POST">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('like' ~ event.id) }}">
-                                    <button type="submit" class="btn btn-sm" style="background-color:#8F1402; color:white;">
-                                        {{ isLiked ? '❤️ Unlike' : '🤍 Like' }}
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                    {% set isLiked     = event.id in likedEventIds %}
+                    {% set isFollowing = event.club.user.id in followedClubUserIds %}
+                    {% include 'partials/_event_card.html.twig' with {
+                        event:       event,
+                        isOwner:     false,
+                        isFeed:      true,
+                        isLiked:     isLiked,
+                        isFollowing: isFollowing
+                    } %}
                 {% endfor %}
             {% endif %}
+
+        </div>
+
+        {# ── SIDEBAR: UPCOMING ──────────────────────────────── #}
+        <div class="col-12 col-lg-4">
+            <div class="sidebar-card" style="text-align:left; position:sticky; top:20px;">
+
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="panel-icon-block">
+                        <i class="bi bi-calendar-event-fill"></i>
+                    </div>
+                    <span class="panel-title" style="font-size:1.1rem;">Upcoming</span>
+                </div>
+
+                {% if upcoming is empty %}
+                    <p class="text-muted" style="font-size:0.88rem;">
+                        Like events to see your upcoming schedule here.
+                    </p>
+                {% else %}
+                    <div class="d-flex flex-column gap-2">
+                        {% for ev in upcoming %}
+                            <a href="{{ path('event_show', {id: ev.id}) }}"
+                               style="text-decoration:none; color:inherit;">
+                                <div style="
+                                    padding: 10px 14px;
+                                    border-radius: 12px;
+                                    border-left: 3px solid #8F1402;
+                                    background: #fdf8f8;
+                                    transition: background 0.15s ease;
+                                " onmouseover="this.style.background='#fbeaea'"
+                                   onmouseout="this.style.background='#fdf8f8'">
+                                    <div style="font-weight:700; font-size:0.88rem; color:#1a1a1a;">
+                                        {{ ev.title }}
+                                    </div>
+                                    <div style="font-size:0.78rem; color:#8F1402; margin-top:3px;">
+                                        <i class="bi bi-calendar3"></i>
+                                        {{ ev.eventDate|date('d MMM · H:i') }}
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+            </div>
         </div>
 
     </div>

@@ -184,8 +184,8 @@ class ClubController extends AbstractController
             $this->em->flush();
             $this->addFlash('success', 'Vous suivez maintenant ' . $club->getName() . ' !');
         }
-
-        return $this->redirectToRoute('club_show', ['id' => $id]);
+//redirect to last page
+        return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('app_home'));
     }
     #[Route('/club/feed',name:'club_feed',methods:['GET'])]
     #[IsGranted('ROLE_CLUB_CONFIRMED')]
