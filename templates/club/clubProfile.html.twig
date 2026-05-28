@@ -134,29 +134,27 @@
                                 >
 
                                 <div class="mb-3">
-                                    <label for="profile_img" class="upload-label">
+                                    <label for="{{ form.profileImgFile.vars.id }}" class="upload-label">
                                         <i class="bi bi-cloud-arrow-up"></i>
                                         <span id="profileFileLabel">Click to change profile photo</span>
                                     </label>
                                     {{ form_widget(form.profileImgFile, {
                                         attr: {
                                             'class': 'd-none',
-                                            'accept': 'image/*',
-                                            'id': 'profile_img'
+                                            'accept': 'image/*'
                                         }
                                     }) }}
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="cover_img" class="upload-label">
+                                    <label for="{{ form.coverImgFile.vars.id }}" class="upload-label">
                                         <i class="bi bi-cloud-arrow-up"></i>
                                         <span id="coverFileLabel">Click to change cover photo</span>
                                     </label>
                                     {{ form_widget(form.coverImgFile, {
                                         attr: {
                                             'class': 'd-none',
-                                            'accept': 'image/*',
-                                            'id': 'cover_img'
+                                            'accept': 'image/*'
                                         }
                                     }) }}
                                 </div>
@@ -212,7 +210,7 @@
 
     <script>
         {% if isOwner %}
-        const profileImg = document.getElementById('profile_img');
+        const profileImg = document.getElementById('{{ form.profileImgFile.vars.id }}');
         if (profileImg) {
             profileImg.addEventListener('change', function () {
                 document.getElementById('profileFileLabel').textContent =
@@ -220,7 +218,7 @@
             });
         }
 
-        const coverImg = document.getElementById('cover_img');
+        const coverImg = document.getElementById('{{ form.coverImgFile.vars.id }}');
         if (coverImg) {
             coverImg.addEventListener('change', function () {
                 document.getElementById('coverFileLabel').textContent =

@@ -4,13 +4,13 @@
     {% set profileUrl = path('admin_dashboard') %}
 {% elseif is_granted('ROLE_CLUB_CONFIRMED') or is_granted('ROLE_CLUB_NOT_CONFIRMED') %}
     {% set profileUrl = path('club_show', {id: sessionUser.id}) %}
-{# {% else %}
-    {% set profileUrl = path('student_profile', {id: sessionUser.id}) %} #}
+{% else %}
+    {% set profileUrl = path('app_profile_etudiant_show', {id: sessionUser.student.id}) %} 
 {% endif %}
 
 <nav class="navbar-home">
     <div class="navbar-logo">
-    {%if is_granted('ROLE_ETUDIANT') %}
+    {%if is_granted('ROLE_STUDENT') %}
         <a href="{{ path('app_home') }}">
         
     {% elseif is_granted('ROLE_CLUB_CONFIRMED') or is_granted('ROLE_CLUB_NOT_CONFIRMED') %}
@@ -18,20 +18,24 @@
         
     {% endif %}
         <img src="{{ asset('images/logo.png') }}" alt="INSAT PULSE">
-        </a>
-        
+        </a>    
     </div>
 
     <div class="nav-icons">
-    {% if is_granted('ROLE_ETUDIANT') %}
+    {% if is_granted('ROLE_STUDENT') %}
         <a href="{{ path('app_home') }}"
-    {% elseif is_granted('ROLE_CLUB_CONFIRMED') or is_granted('ROLE_CLUB_NOT_CONFIRMED') %}
-        <a href="{{ path('club_feed') }}"
-     {% endif %}
            class="nav-icon-btn {{ app.request.attributes.get('_route') in ['app_home', 'admin_dashboard', 'club_feed', 'student_feed'] ? 'active' : '' }}"
            title="Home">
             <i class="bi bi-house-door-fill"></i>
         </a> 
+    {% elseif is_granted('ROLE_CLUB_CONFIRMED') or is_granted('ROLE_CLUB_NOT_CONFIRMED') %}
+        <a href="{{ path('club_feed') }}"
+           class="nav-icon-btn {{ app.request.attributes.get('_route') in ['app_home', 'admin_dashboard', 'club_feed', 'student_feed'] ? 'active' : '' }}"
+           title="Home">
+            <i class="bi bi-house-door-fill"></i>
+        </a> 
+     {% endif %}
+       
 
     <a href="{{ path('calendar') }}"
            class="nav-icon-btn {{ app.request.attributes.get('_route') == 'calendar' ? 'active' : '' }}"
