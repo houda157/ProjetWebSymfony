@@ -2,9 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
+use App\Form\ProfileEtudiantFormType;
 use App\Repository\ClubRepository;
 use App\Repository\EventRepository;
 use App\Repository\StudentRepository;
+use App\Service\FileUploadService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,14 +16,14 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-class FeedController extends AbstractController
+class StudentController extends AbstractController
 {
-    public function _construct(){
-        /// 3abihom
-    }
+    public function __construct(
+        private FileUploadService $uploader
+    ) {}
+
     #[Route('/', name: 'app_home')]
     #[Route('/', name: 'app_feed')]
-    //is granted for student only
     #[IsGranted('ROLE_STUDENT')]
     public function index(
         EventRepository $eventRepo,
@@ -58,8 +62,46 @@ class FeedController extends AbstractController
         ]);
     }
 
+    #[Route('/profile/{id}', name: 'app_profile_etudiant_show', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_STUDENT')]
+    public function show(int $id, StudentRepository $studentRepository, Request $request, EntityManagerInterface $em): Response
+    {
+        $student = $studentRepository->find($id);
 
-//evetn controller
+        if (!$student) {
+            throw $this->createNotFoundException('Student not found');
+        }
+
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        $isOwner = $currentUser
+            && $currentUser->getStudent()
+            && $currentUser->getStudent()->getId() === $student->getId();
+
+        $form = null;
+        if ($isOwner) {
+            $form = $this->createForm(ProfileEtudiantFormType::class, $student);
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+                $photoFile = $form->get('photoFile')->getData();
+                if ($photoFile) {
+                    $path = $this->uploader->upload($photoFile, 'users/profile_img', (string) $id);
+                    $student->getUser()->setProfileImg($path);
+                }
+                $em->flush();
+                $this->addFlash('success', 'Profile updated successfully!');
+                return $this->redirectToRoute('app_profile_etudiant_show', ['id' => $id]);
+            }
+        }
+
+        return $this->render('student/studentProfile.html.twig', [
+            'student' => $student,
+            'form'    => $form,
+            'isOwner' => $isOwner,
+        ]);
+    }
+
     #[Route('/search', name: 'do_search')]
     public function search(
         Request $request,
@@ -71,7 +113,7 @@ class FeedController extends AbstractController
         if (strlen($q) < 1) {
             return new JsonResponse(['clubs' => [], 'events' => []]);
         }
-//query in the repository
+
         $clubs = $clubRepo->createQueryBuilder('c')
             ->where('c.name LIKE :q')
             ->setParameter('q', '%' . $q . '%')
