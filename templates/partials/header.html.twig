@@ -1,11 +1,13 @@
 {% set sessionUser = app.user %}
 
 {% if is_granted('ROLE_ADMIN') %}
-    {% set profileUrl = path('admin_dashboard') %}
+    {% set profileUrl = path('app_home') %}
 {% elseif is_granted('ROLE_CLUB_CONFIRMED') or is_granted('ROLE_CLUB_NOT_CONFIRMED') %}
     {% set profileUrl = path('club_show', {id: sessionUser.id}) %}
-{# {% else %}
-    {% set profileUrl = path('student_profile', {id: sessionUser.id}) %} #}
+{% elseif is_granted('ROLE_STUDENT') and sessionUser.student %}
+    {% set profileUrl = path('app_profile_etudiant_show', {id: sessionUser.student.id}) %}
+{% else %}
+    {% set profileUrl = path('app_home') %}
 {% endif %}
 
 <nav class="navbar-home">

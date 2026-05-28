@@ -153,19 +153,23 @@ class User implements UserInterface,PasswordAuthenticatedUserInterface
 
         return $this;
     }
-      public function getUserIdentifier(): string
+    public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
-     public function getRoles(): array
+
+    public function getRoles(): array
     {
-        $roles[] = $this->getRole()?:'ROLE_USER';
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
+        $roles = ['ROLE_USER'];
+
+        if ($this->role) {
+            $roles[] = $this->role;
+        }
 
         return array_unique($roles);
     }
-     public function eraseCredentials(): void
+
+    public function eraseCredentials(): void
     {
     }
 }

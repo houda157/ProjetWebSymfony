@@ -92,6 +92,7 @@ class EventController extends AbstractController
     }
 
     #[Route('/event/{id}/delete', name: 'event_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_CLUB_CONFIRMED')]
     public function delete(Event $event, Request $request): Response
     {
         if (!$event) {

@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class FeedController extends AbstractController
 {
@@ -48,6 +49,7 @@ class FeedController extends AbstractController
     }
 
     #[Route('/like/{id}', name: 'app_like', methods: ['POST'])]
+    #[IsGranted('ROLE_STUDENT')]
     public function like(
         int $id,
         Request $request,

@@ -16,7 +16,7 @@ use App\Entity\User;
 use App\Repository\ClubRepository;
 use App\Repository\EventRepository;
 use App\Repository\FollowRepository;
-use App\Form\ClubProfileType;
+use App\Form\ClubFormType;
 use App\Service\FileUploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -68,7 +68,7 @@ class ClubController extends AbstractController
 
         $form = null;
         if ($isOwner) {
-            $form = $this->createForm(ClubProfileType::class, $club, [
+            $form = $this->createForm(ClubFormType::class, $club, [
                 'action' => $this->generateUrl('club_edit', ['id' => $id]),
                 'method' => 'POST',
                 'csrf_token_id' => 'club_edit',
@@ -105,7 +105,7 @@ class ClubController extends AbstractController
             throw $this->createAccessDeniedException('Vous ne pouvez modifier que votre propre club.');
         }
 
-        $form = $this->createForm(ClubProfileType::class, $club, [
+        $form = $this->createForm(ClubFormType::class, $club, [
             'csrf_token_id' => 'club_edit',
         ]);
         $form->handleRequest($request);

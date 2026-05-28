@@ -13,27 +13,27 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 
 class RegistrationController extends AbstractController
 {
     #[Route('/register', name: 'app_register', methods: ['GET'])]
-    public function choose(AuthenticationUtils $authenticationUtils): Response
+    public function choose(): Response
     {
-        return $authenticationUtils->getLastUsername()? $this->redirectToRoute('app_home') : $this->render('registration/choose.html.twig');
+        return $this->getUser() ? $this->redirectToRoute('app_home') : $this->render('registration/choose.html.twig');
     }
 
     #[Route('/register/student', name: 'app_register_student', methods: ['GET', 'POST'])]
     public function student(
-        AuthenticationUtils $authenticationUtils,
         Request $request,
         UserRepository $userRepository,
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
     ): Response {
 
-        if($authenticationUtils->getLastUsername()) {return $this->redirectToRoute('app_home');}
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_home');
+        }
         
         $data = [
             'fullname' => trim((string) $request->request->get('fullname')),
@@ -76,14 +76,15 @@ class RegistrationController extends AbstractController
 
     #[Route('/register/club', name: 'app_register_club', methods: ['GET', 'POST'])]
     public function club(
-        AuthenticationUtils $authenticationUtils,
         Request $request,
         UserRepository $userRepository,
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
     ): Response {
 
-        if($authenticationUtils->getLastUsername()) {return $this->redirectToRoute('app_home');}
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_home');
+        }
 
         $clubName = trim((string) $request->request->get('clubname'));
         $data = [
