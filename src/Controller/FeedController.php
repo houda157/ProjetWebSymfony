@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Repository\ClubRepository;
 use App\Repository\EventRepository;
-use App\Repository\LikeRepository;
 use App\Repository\StudentRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -58,45 +57,6 @@ class FeedController extends AbstractController
             'now'                 => $now,
         ]);
     }
-
-// go to event controller
-    #[Route('/event/{id}', name: 'event_show')]
-    public function eventShow(
-        int $id,
-        EventRepository $eventRepo,
-        LikeRepository $likeRepo,
-        StudentRepository $studentRepo
-    ): Response {
-        $event = $eventRepo->find($id);
-
-        if (!$event) {
-            throw $this->createNotFoundException('Event introuvable.');
-        }
-
-        $user = $this->getUser();
-        $student = $user ? $studentRepo->findOneBy(['user' => $user]) : null;
-        $hasLiked = false;
-        $likeCount = count($event->getLikes());
-
-        if ($student) {
-            $hasLiked = (bool) $likeRepo->findOneBy([
-                'student' => $student,
-                'event'   => $event,
-            ]);
-        }
-
-        return $this->render('student/studentEvent.html.twig', [
-            'event'     => $event,
-            'hasLiked'  => $hasLiked,
-            'likeCount' => $likeCount,
-        ]);
-    }
-// normalement zeyed
-    // #[Route('/student/profile/{id}', name: 'student_profile')]
-    // public function studentProfile(int $id): Response
-    // {
-    //     return $this->redirectToRoute('app_home');
-    // }
 
 
 //evetn controller
