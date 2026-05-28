@@ -17,49 +17,50 @@
 
                     <h1 class="form-title">Request a club account</h1>
 
-                    {% if errors._global is defined %}
-                        <small class="form-error">{{ errors._global }}</small>
-                    {% endif %}
+                    {% for error in form.vars.errors %}
+                        <small class="form-error">{{ error.message }}</small>
+                    {% endfor %}
 
-                    <form class="registration-form" action="{{ path('app_register_club') }}" method="post">
-                        <input type="hidden" name="_token" value="{{ csrf_token('register_club') }}">
-
+                    {{ form_start(form, { 'attr': { 'class': 'registration-form' } }) }}
                         <div class="form-group">
-                            <label for="clubname">Club's name</label>
-                            <input type="text" id="clubname" name="clubname" value="{{ data.clubname }}" required>
-                            {% if errors.clubname is defined %}
-                                <small class="form-error">{{ errors.clubname }}</small>
-                            {% endif %}
-                            {% if errors.username is defined %}
-                                <small class="form-error">{{ errors.username }}</small>
-                            {% endif %}
+                            {{ form_label(form.clubname) }}
+                            {{ form_widget(form.clubname) }}
+                            {% for error in form.clubname.vars.errors %}
+                                <small class="form-error">{{ error.message }}</small>
+                            {% endfor %}
                         </div>
 
                         <div class="form-group">
-                            <label for="email">Official Email</label>
-                            <input id="email" type="email" name="email" value="{{ data.email }}" required>
-                            {% if errors.email is defined %}
-                                <small class="form-error">{{ errors.email }}</small>
-                            {% endif %}
+                            {{ form_label(form.email) }}
+                            {{ form_widget(form.email) }}
+                            {% for error in form.email.vars.errors %}
+                                <small class="form-error">{{ error.message }}</small>
+                            {% endfor %}
                         </div>
 
                         <div class="form-group">
-                            <label for="password">Password</label>
-                            <input id="password" type="password" name="password" required>
+                            {{ form_label(form.plainPassword.first) }}
+                            {{ form_widget(form.plainPassword.first) }}
                             <small id="password-weak" class="form-error form-hint">Password must have at least 8 characters.</small>
+                            {% for error in form.plainPassword.first.vars.errors %}
+                                <small class="form-error">{{ error.message }}</small>
+                            {% endfor %}
                         </div>
 
                         <div class="form-group">
-                            <label for="repeat-password">Repeat password</label>
-                            <input id="repeat-password" name="repeat-password" type="password" required>
+                            {{ form_label(form.plainPassword.second) }}
+                            {{ form_widget(form.plainPassword.second) }}
                             <small id="password-mismatch" class="form-error form-hint">Verify your password.</small>
-                            {% if errors.password is defined %}
-                                <small class="form-error">{{ errors.password }}</small>
-                            {% endif %}
+                            {% for error in form.plainPassword.second.vars.errors %}
+                                <small class="form-error">{{ error.message }}</small>
+                            {% endfor %}
+                            {% for error in form.plainPassword.vars.errors %}
+                                <small class="form-error">{{ error.message }}</small>
+                            {% endfor %}
                         </div>
 
                         <button type="submit" class="submit-btn">Send request</button>
-                    </form>
+                    {{ form_end(form) }}
 
                     <p class="auth-switch">
                         Already have an account?
@@ -77,8 +78,8 @@
 
 {% block javascripts %}
     <script>
-        const passwordInput = document.getElementById('password');
-        const repeatInput = document.getElementById('repeat-password');
+        const passwordInput = document.getElementById('{{ form.plainPassword.first.vars.id }}');
+        const repeatInput = document.getElementById('{{ form.plainPassword.second.vars.id }}');
         const weakMessage = document.getElementById('password-weak');
         const mismatchMessage = document.getElementById('password-mismatch');
 

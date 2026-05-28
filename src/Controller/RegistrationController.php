@@ -6,9 +6,13 @@ use App\Entity\Club;
 use App\Entity\Student;
 use App\Entity\User;
 use App\Enum\UserRole;
+use App\Form\ClubRegistrationFormType;
+use App\Form\StudentRegistrationFormType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -34,43 +38,29 @@ class RegistrationController extends AbstractController
         if ($this->getUser()) {
             return $this->redirectToRoute('app_home');
         }
-        
-        $data = [
-            'fullname' => trim((string) $request->request->get('fullname')),
-            'username' => trim((string) $request->request->get('username')),
-            'email' => trim((string) $request->request->get('email')),
-        ];
-        $errors = [];
 
-        if ($request->isMethod('POST')) {
-            $password = (string) $request->request->get('password');
-            $repeatPassword = (string) $request->request->get('repeat-password');
-            $errors = $this->validateAccountData($request, $userRepository, $data['username'], $data['email'], $password, $repeatPassword, 'register_student');
+        $form = $this->createForm(StudentRegistrationFormType::class);
+        $form->handleRequest($request);
 
-            if ($data['fullname'] === '') {
-                $errors['fullname'] = 'Full name is required.';
-            }
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $this->addUserConflictErrors($form, $userRepository, $data['username'], $data['email']);
 
-            if ($errors === []) {
-                $user = $this->createUser($data['username'], $data['email'], $password, UserRole::STUDENT->value, $passwordHasher);
+            if ($form->isValid()) {
+                $user = $this->createUser($data['username'], $data['email'], $data['plainPassword'], UserRole::STUDENT->value, $passwordHasher);
+                $student = (new Student())
+                    ->setFullname($data['fullname'])
+                    ->setUser($user);
 
-                $student = new Student();
-                $student->setFullname($data['fullname']);
-                $student->setUser($user);
-
-                $entityManager->persist($user);
                 $entityManager->persist($student);
                 $entityManager->flush();
-
-                $this->addFlash('success', 'Student account created. You can log in now.');
 
                 return $this->redirectToRoute('app_login');
             }
         }
 
         return $this->render('registration/student.html.twig', [
-            'data' => $data,
-            'errors' => $errors,
+            'form' => $form,
         ]);
     }
 
@@ -86,82 +76,47 @@ class RegistrationController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
-        $clubName = trim((string) $request->request->get('clubname'));
-        $data = [
-            'clubname' => $clubName,
-            'email' => trim((string) $request->request->get('email')),
-        ];
-        $errors = [];
+        $form = $this->createForm(ClubRegistrationFormType::class);
+        $form->handleRequest($request);
 
-        if ($request->isMethod('POST')) {
-            $password = (string) $request->request->get('password');
-            $repeatPassword = (string) $request->request->get('repeat-password');
-            $username = $this->makeClubUsername($clubName);
-            $errors = $this->validateAccountData($request, $userRepository, $username, $data['email'], $password, $repeatPassword, 'register_club');
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $username = $this->makeClubUsername($data['clubname']);
+            $this->addUserConflictErrors($form, $userRepository, $username, $data['email'], 'clubname', 'This club name is already used for an account.');
 
-            if ($clubName === '') {
-                $errors['clubname'] = 'Club name is required.';
-            }
+            if ($form->isValid()) {
+                $user = $this->createUser($username, $data['email'], $data['plainPassword'], UserRole::CLUB_NOT_CONFIRMED->value, $passwordHasher);
+                $club = (new Club())
+                    ->setName($data['clubname'])
+                    ->setUser($user);
 
-            if ($errors === []) {
-                $user = $this->createUser($username, $data['email'], $password, UserRole::CLUB_NOT_CONFIRMED->value, $passwordHasher);
-
-                $club = new Club();
-                $club->setName($clubName);
-                $club->setUser($user);
-
-                $entityManager->persist($user);
                 $entityManager->persist($club);
                 $entityManager->flush();
-
-                $this->addFlash('success', 'Club request sent. You can log in while waiting for approval.');
 
                 return $this->redirectToRoute('app_login');
             }
         }
 
         return $this->render('registration/club.html.twig', [
-            'data' => $data,
-            'errors' => $errors,
+            'form' => $form,
         ]);
     }
 
-    private function validateAccountData(
-        Request $request,
+    private function addUserConflictErrors(
+        FormInterface $form,
         UserRepository $userRepository,
         string $username,
         string $email,
-        string $password,
-        string $repeatPassword,
-        string $csrfId,
-    ): array {
-        $errors = [];
-
-        if (!$this->isCsrfTokenValid($csrfId, (string) $request->request->get('_token'))) {
-            $errors['_global'] = 'Invalid form token. Refresh the page and try again.';
+        string $usernameField = 'username',
+        string $usernameMessage = 'This username is already used.',
+    ): void {
+        if ($userRepository->findOneBy(['username' => $username])) {
+            $form->get($usernameField)->addError(new FormError($usernameMessage));
         }
 
-        if ($username === '') {
-            $errors['username'] = 'Username is required.';
-        } elseif ($userRepository->findOneBy(['username' => $username])) {
-            $errors['username'] = 'This username is already used.';
+        if ($userRepository->findOneBy(['email' => $email])) {
+            $form->get('email')->addError(new FormError('This email is already used.'));
         }
-
-        if ($email === '') {
-            $errors['email'] = 'Email is required.';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Enter a valid email address.';
-        } elseif ($userRepository->findOneBy(['email' => $email])) {
-            $errors['email'] = 'This email is already used.';
-        }
-
-        if (strlen($password) < 8) {
-            $errors['password'] = 'Password must have at least 8 characters.';
-        } elseif ($password !== $repeatPassword) {
-            $errors['password'] = 'Verify your password.';
-        }
-
-        return $errors;
     }
 
     private function createUser(
@@ -174,8 +129,7 @@ class RegistrationController extends AbstractController
         $user = new User();
         $user->setUsername($username);
         $user->setEmail($email);
-
-        $user->setRole($role === UserRole::CLUB_NOT_CONFIRMED->value ? UserRole::CLUB_NOT_CONFIRMED : UserRole::STUDENT);
+        $user->setRole($role);
         $user->setCreatedAt(new \DateTime());
         $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
 
