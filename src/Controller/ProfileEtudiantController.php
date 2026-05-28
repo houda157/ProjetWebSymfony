@@ -48,10 +48,22 @@ final class ProfileEtudiantController extends AbstractController
             $this->addFlash('success', 'Profile updated successfully!');
             return $this->redirectToRoute('app_profile_etudiant_show', ['id' => $id]);
         }
+        //naraw user connecte + etudiant nafsou li f url
+        $isOwner = $this->getUser() && 
+           $this->getUser()->getStudent() && 
+           $this->getUser()->getStudent()->getId() === $student->getId();
 
-        return $this->render('profile_etudiant/show.html.twig', [
-            'student' => $student,
-            'form' => $form
-        ]);
+        if ($isOwner){
+                return $this->render('profile_etudiant/show.html.twig', [
+                'student' => $student,
+                'form' => $form
+            ]);
+        }
+        else{
+            return $this->render('profile_etudiant/public_profile.html.twig', [
+                'student' => $student
+            ]);
+        }
+
     }
 }
