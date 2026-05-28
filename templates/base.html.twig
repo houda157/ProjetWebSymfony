@@ -24,10 +24,8 @@
     {# Header — uniquement pour les utilisateurs connectés #}
     {% block header %}
         {% if app.user %}
-        <div class="container-fluid p-0">
-            hello {{ app.user.username }}
-        </div>
-            {# {% include 'partials/header.html.twig' %} #}
+        
+            {% include 'partials/header.html.twig' %} 
         {% endif %}
     {% endblock %}
 

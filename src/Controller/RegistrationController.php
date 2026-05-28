@@ -174,7 +174,8 @@ class RegistrationController extends AbstractController
         $user = new User();
         $user->setUsername($username);
         $user->setEmail($email);
-        $user->setRole($role);
+
+        $user->setRole($role === UserRole::CLUB_NOT_CONFIRMED->value ? UserRole::CLUB_NOT_CONFIRMED : UserRole::STUDENT);
         $user->setCreatedAt(new \DateTime());
         $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
 
