@@ -14,6 +14,7 @@ use App\Entity\Club;
 use App\Entity\Follow;
 use App\Entity\User;
 use App\Repository\ClubRepository;
+use App\Repository\EventRepository;
 use App\Repository\FollowRepository;
 use App\Form\ClubProfileType;
 use App\Service\FileUploadService;
@@ -32,6 +33,7 @@ class ClubController extends AbstractController
         private FollowRepository $followRepo,
         private EntityManagerInterface $em,
         private FileUploadService $uploader,
+        private EventRepository $eventRepo,
     ) {}
 
     // ────────────────────────────────────────────────────────────────────────
@@ -185,4 +187,20 @@ class ClubController extends AbstractController
 
         return $this->redirectToRoute('club_show', ['id' => $id]);
     }
+    #[Route('/club/{id}/feed',name:'club_feed',methods:['GET'])]
+    //#[IsGranted('ROLE_CLUB_CONFIRMED')]
+    public function feedShow(int $id):Response
+    {
+        $club=$this->clubRepo->findByUserId($id);
+        if(!$club){
+            throw $this->createNotFoundException('Club introuvable.');
+        }
+        $posts=$this->eventRepo->getAllPosts();
+        //dd($posts);
+        return $this->render('club/clubFeed.html.twig',[
+            'club'=>$club,
+            'events'=>$posts,
+        ]);
+    }
+
 }

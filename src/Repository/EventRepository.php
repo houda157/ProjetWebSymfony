@@ -31,6 +31,15 @@ class EventRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    public function getAllPosts():array
+    {
+        return $this->createQueryBuilder('e')
+        ->join('e.club','c')
+        ->join('c.user','u')
+        ->orderBy('e.eventDate','DESC')
+        ->getQuery()
+        ->getResult();
+    }
 }
 //    /**
 //     * @return Event[] Returns an array of Event objects
