@@ -30,28 +30,31 @@ final class ProfileEtudiantController extends AbstractController
 
         /** @var User|null $currentUser */
         $currentUser = $this->getUser();
-        if (!$currentUser || !$currentUser->getStudent() || $currentUser->getStudent()->getId() !== $student->getId()) {
-            throw $this->createAccessDeniedException('You can only edit your own profile.');
-        }
+        $isOwner = $currentUser
+            && $currentUser->getStudent()
+            && $currentUser->getStudent()->getId() === $student->getId();
 
-        $form = $this->createForm(ProfileEtudiantFormType::class, $student);
-        $form->handleRequest($request);
-        //remplit le form avec les données POST 
+        $form = null;
+        if ($isOwner) {
+            $form = $this->createForm(ProfileEtudiantFormType::class, $student);
+            $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $photoFile = $form->get('photoFile')->getData();
-            if ($photoFile) {
-                $path = $this->uploader->upload($photoFile, 'users/profile_img', (string) $id);
-                $student->getUser()->setProfileImg($path);
+            if ($form->isSubmitted() && $form->isValid()) {
+                $photoFile = $form->get('photoFile')->getData();
+                if ($photoFile) {
+                    $path = $this->uploader->upload($photoFile, 'users/profile_img', (string) $id);
+                    $student->getUser()->setProfileImg($path);
+                }
+                $em->flush();
+                $this->addFlash('success', 'Profile updated successfully!');
+                return $this->redirectToRoute('app_profile_etudiant_show', ['id' => $id]);
             }
-            $em->flush(); 
-            $this->addFlash('success', 'Profile updated successfully!');
-            return $this->redirectToRoute('app_profile_etudiant_show', ['id' => $id]);
         }
 
-        return $this->render('profile_etudiant/show.html.twig', [
+        return $this->render('student/studentProfile.html.twig', [
             'student' => $student,
-            'form' => $form
+            'form'    => $form,
+            'isOwner' => $isOwner,
         ]);
     }
 }

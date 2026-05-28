@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}INSAT Pulse – Feed{% endblock %}
+{% block title %}My Profile – {{ student.fullname }}{% endblock %}
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('css/student.css') }}">
@@ -11,74 +11,217 @@
 <div class="page-body">
     <div class="row g-4">
 
-        {# ── EVENTS FEED ────────────────────────────────────── #}
-        <div class="col-12 col-lg-8">
+        {# ── SIDEBAR ───────────────────────────────────────────────── #}
+        <div class="col-12 col-md-4 col-lg-3">
+            <div class="sidebar-card">
 
-            {% if events is empty %}
-                <div class="blank-panel">
-                    <i class="bi bi-megaphone text-secondary" style="font-size:2.5rem;"></i>
-                    <span class="text-secondary">No posts yet.</span>
-                </div>
-            {% else %}
-                {% for event in events %}
-                    {% set isLiked     = event.id in likedEventIds %}
-                    {% set isFollowing = event.club.user.id in followedClubUserIds %}
-                    {% include 'partials/_event_card.html.twig' with {
-                        event:       event,
-                        isOwner:     false,
-                        isFeed:      true,
-                        isLiked:     isLiked,
-                        isFollowing: isFollowing
-                    } %}
-                {% endfor %}
-            {% endif %}
-
-        </div>
-
-        {# ── SIDEBAR: UPCOMING ──────────────────────────────── #}
-        <div class="col-12 col-lg-4">
-            <div class="sidebar-card" style="text-align:left; position:sticky; top:20px;">
-
-                <div class="d-flex align-items-center gap-3 mb-3">
-                    <div class="panel-icon-block">
-                        <i class="bi bi-calendar-event-fill"></i>
-                    </div>
-                    <span class="panel-title" style="font-size:1.1rem;">Upcoming</span>
+                <div class="student-avatar">
+                    <img src="{{ student.user.profileImg
+                                ? asset('uploads/' ~ student.user.profileImg)
+                                : 'https://placehold.co/110x110/8F1402/ffffff?text=' ~ student.fullname|first|upper }}"
+                         alt="{{ student.fullname }}">
                 </div>
 
-                {% if upcoming is empty %}
-                    <p class="text-muted" style="font-size:0.88rem;">
-                        Like events to see your upcoming schedule here.
-                    </p>
-                {% else %}
-                    <div class="d-flex flex-column gap-2">
-                        {% for ev in upcoming %}
-                            <a href="{{ path('event_show', {id: ev.id}) }}"
-                               style="text-decoration:none; color:inherit;">
-                                <div style="
-                                    padding: 10px 14px;
-                                    border-radius: 12px;
-                                    border-left: 3px solid #8F1402;
-                                    background: #fdf8f8;
-                                    transition: background 0.15s ease;
-                                " onmouseover="this.style.background='#fbeaea'"
-                                   onmouseout="this.style.background='#fdf8f8'">
-                                    <div style="font-weight:700; font-size:0.88rem; color:#1a1a1a;">
-                                        {{ ev.title }}
-                                    </div>
-                                    <div style="font-size:0.78rem; color:#8F1402; margin-top:3px;">
-                                        <i class="bi bi-calendar3"></i>
-                                        {{ ev.eventDate|date('d MMM · H:i') }}
-                                    </div>
-                                </div>
-                            </a>
-                        {% endfor %}
+                <div class="student-name">{{ student.fullname }}</div>
+                <div class="student-handle">@{{ student.user.username }}</div>
+
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-num">{{ student.likes|length }}</div>
+                        <div class="stat-lbl">Liked</div>
                     </div>
-                {% endif %}
+                    <div class="stat-item">
+                        <div class="stat-num">{{ student.follows|length }}</div>
+                        <div class="stat-lbl">Following</div>
+                    </div>
+                </div>
+
+                <div class="student-info">
+                    {% if student.major %}
+                        <div class="info-row">
+                            <i class="bi bi-mortarboard-fill"></i> {{ student.major }}
+                        </div>
+                    {% endif %}
+                    {% if student.birthday %}
+                        <div class="info-row">
+                            <i class="bi bi-cake2-fill"></i> {{ student.birthday|date('d/m/Y') }}
+                        </div>
+                    {% endif %}
+                    <div class="info-row">
+                        <i class="bi bi-envelope-fill"></i> {{ student.user.email }}
+                    </div>
+                </div>
+
+                <div class="sidebar-nav">
+                    {% if isOwner %}
+                    <button class="nav-btn active" data-panel="profile" onclick="switchPanel(this)">
+                        <i class="bi bi-person-circle"></i> My Profile
+                    </button>
+                    {% endif %}
+                    <button class="nav-btn {% if not isOwner %}active{% endif %}" data-panel="clubs" onclick="switchPanel(this)">
+                        <i class="bi bi-buildings-fill"></i> Followed Clubs
+                    </button>
+                    <button class="nav-btn" data-panel="events" onclick="switchPanel(this)">
+                        <i class="bi bi-heart-fill"></i> Liked Events
+                    </button>
+                </div>
 
             </div>
         </div>
 
+        {# ── MAIN CONTENT ──────────────────────────────────────────── #}
+        <div class="col-12 col-md-8 col-lg-9">
+            <div class="content-card">
+
+                {# ══ PANEL : PROFILE EDIT (owner only) ════════════════ #}
+                {% if isOwner %}
+                <div id="panel-profile">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="panel-icon-block">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+                        <h2 class="panel-title">Profile Settings</h2>
+                    </div>
+
+                    {{ form_start(form, { attr: { 'enctype': 'multipart/form-data' } }) }}
+                        {{ form_errors(form) }}
+
+                        {# Photo upload #}
+                        <div class="mb-4">
+                            <label for="{{ form.photoFile.vars.id }}" class="upload-label">
+                                <i class="bi bi-cloud-arrow-up"></i>
+                                <span id="photoFileLabel">Click to change profile photo</span>
+                            </label>
+                            {{ form_widget(form.photoFile, { attr: { 'class': 'd-none' } }) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="bi bi-person"></i> Full Name
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                    {{ form_widget(form.fullname, { attr: { 'class': 'form-control' } }) }}
+                                </div>
+                                {{ form_errors(form.fullname) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="bi bi-mortarboard"></i> Major
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-mortarboard"></i></span>
+                                    {{ form_widget(form.major, { attr: { 'class': 'form-control' } }) }}
+                                </div>
+                                {{ form_errors(form.major) }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-muted">
+                                <i class="bi bi-cake2"></i> Birthday
+                            </label>
+                            <div class="d-flex gap-2">
+                                {{ form_widget(form.birthday, { attr: { 'class': 'form-select' } }) }}
+                            </div>
+                            {{ form_errors(form.birthday) }}
+                        </div>
+
+                        <div class="d-grid mt-4 mb-3">
+                            <button type="submit" class="btn btn-lg btn-save">
+                                <i class="bi bi-check-lg me-2"></i> Save Changes
+                            </button>
+                        </div>
+
+                        {{ form_rest(form) }}
+                    {{ form_end(form) }}
+                </div>
+                {% endif %}
+
+                {# ══ PANEL : FOLLOWED CLUBS ════════════════════════════ #}
+                <div id="panel-clubs" class="d-none">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="panel-icon-block">
+                            <i class="bi bi-buildings-fill"></i>
+                        </div>
+                        <h2 class="panel-title">Followed Clubs</h2>
+                    </div>
+
+                    {% if student.follows|length > 0 %}
+                        <div class="clubs-grid">
+                            {% for follow in student.follows %}
+                                <a href="{{ path('club_show', {id: follow.club.user.id}) }}"
+                                   class="club-follow-card">
+                                    <img src="{{ follow.club.user.profileImg
+                                                ? asset('uploads/' ~ follow.club.user.profileImg)
+                                                : 'https://placehold.co/64x64/8F1402/ffffff?text=' ~ follow.club.name|first|upper }}"
+                                         alt="{{ follow.club.name }}"
+                                         class="club-follow-avatar">
+                                    <span class="club-follow-name">{{ follow.club.name }}</span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="blank-panel">
+                            <i class="bi bi-buildings text-secondary" style="font-size:2.5rem;"></i>
+                            <span class="text-secondary">No clubs followed yet.</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# ══ PANEL : LIKED EVENTS ══════════════════════════════ #}
+                <div id="panel-events" class="d-none">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="panel-icon-block">
+                            <i class="bi bi-heart-fill"></i>
+                        </div>
+                        <h2 class="panel-title">Liked Events</h2>
+                    </div>
+
+                    {% if student.likes|length > 0 %}
+                        {% for like in student.likes %}
+                            {% include 'partials/_event_card.html.twig' with {
+                                event: like.event,
+                                isOwner: false,
+                                isFeed: true
+                            } %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="blank-panel">
+                            <i class="bi bi-heart text-secondary" style="font-size:2.5rem;"></i>
+                            <span class="text-secondary">No liked events yet.</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    {% if isOwner %}
+    const photoFile = document.getElementById('{{ form.photoFile.vars.id }}');
+    if (photoFile) {
+        photoFile.addEventListener('change', function () {
+            document.getElementById('photoFileLabel').textContent =
+                this.files[0] ? this.files[0].name : 'Click to change profile photo';
+        });
+    }
+    {% endif %}
+
+    function switchPanel(btn) {
+        document.querySelectorAll('.sidebar-nav .nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.getElementById('panel-profile').classList.add('d-none');
+        document.getElementById('panel-clubs').classList.add('d-none');
+        document.getElementById('panel-events').classList.add('d-none');
+
+        document.getElementById('panel-' + btn.dataset.panel).classList.remove('d-none');
+    }
+</script>
 {% endblock %}

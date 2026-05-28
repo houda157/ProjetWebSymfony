@@ -50,7 +50,7 @@ class FeedController extends AbstractController
             usort($upcoming, fn($a, $b) => $a->getEventDate() <=> $b->getEventDate());
         }
 
-        return $this->render('feed/index.html.twig', [
+        return $this->render('student/studentFeed.html.twig', [
             'events'              => $events,
             'upcoming'            => $upcoming,
             'student'             => $student,
@@ -126,7 +126,7 @@ class FeedController extends AbstractController
             ]);
         }
 
-        return $this->render('feed/event.html.twig', [
+        return $this->render('student/studentEvent.html.twig', [
             'event'     => $event,
             'hasLiked'  => $hasLiked,
             'likeCount' => $likeCount,
