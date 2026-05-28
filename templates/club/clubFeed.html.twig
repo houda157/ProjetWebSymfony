@@ -1,51 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>INSAT Pulse - Home</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('assets/css/header.css') }}">
-</head>
-<body style="background: linear-gradient(135deg, #fde8e0 0%, #f9d5d3 40%, #f5c6c8 100%); min-height: 100vh;">
+{# templates/home/club_feed.html.twig
+   Feed d'accueil du club — événements de tous les clubs (multi-clubs).
+   Remplace : club-feed.php
 
-    {# include('includes/templates/header.html.twig', ignore_missing=true) #}
+   isFeed: true → chaque carte montre le nom + logo du club qui a posté.
+   isOwner: calculé PAR ÉVÉNEMENT — true uniquement si l'event appartient
+            au club connecté (→ boutons Edit/Delete), false sinon. #}
 
+{% extends 'base.html.twig' %}
+
+{% block title %}INSAT Pulse - Home{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/club.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/event.css') }}">
+{% endblock %}
+
+{% block body %}
     <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-12">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-8">
                 {% if events is not empty %}
 
                     {% for event in events %}
-                        <div class="card mb-3">
-                            {% if event.image is defined and event.image is not empty %}
-                                <img src="{{ asset('uploads/' ~ event.image) }}" class="card-img-top" alt="Event image">
-                            {% endif %}
-                            
-                            <div class="card-body">
-                                <h5>{{ event.title }}</h5>
-                                <p>{{ event.description }}</p>
-                                <small>
-                                    <a href="{{ path('club_show', {'id': event.club.user.id}) }}" style="color:#8F1402;">
-                                        {{ event.club.name }}
-                                    </a> |
-                                    {{ event.eventDate|date('Y-m-d') }}
-                                </small>
-                            </div>
-                        </div>
+                        {% include 'partials/_event_card.html.twig' with {
+                            event: event,
+                            isOwner: (app.user and event.club.user.id == app.user.id),
+                            isFeed: true
+                        } %}
                     {% endfor %}
-                    
+
                 {% else %}
                     <div class="text-center mt-5">
                         <i class="bi bi-megaphone text-secondary" style="font-size:2.5rem;"></i>
                         <p class="text-muted mt-2">No posts yet.</p>
                     </div>
                 {% endif %}
-
             </div>
         </div>
     </div>
-
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,101 @@
+{# templates/partials/_event_card.html.twig
+   Carte réutilisable pour afficher un événement.
+
+   ── PARAMÈTRES ──────────────────────────────────────────────────────────────
+    <div class="event-card-body">
+   • isOwner : (optionnel, défaut false) true si l'utilisateur connecté est le
+        <h5 class="event-card-title">
+   • isFeed  : (optionnel, défaut false) true quand la carte est affichée dans
+        </h5>
+
+               → affiche le nom + logo du club au-dessus du titre.
+        <p class="event-card-meta">
+
+   ── COMPORTEMENT DES BOUTONS ────────────────────────────────────────────────
+        </p>
+
+   • Étudiant (ROLE_STUDENT)           → compteur de likes
+   • Autre club / visiteur             → compteur de likes en lecture seule
+            <p class="event-card-desc">{{ event.description }}</p>
+
+
+{% set isOwner = isOwner|default(false) %}
+{% set isFeed  = isFeed|default(false) %}
+
+<article class="event-card">
+
+    {# ── EN-TÊTE : nom du club (uniquement dans un feed multi-clubs) ───────── #}
+    {% if isFeed %}
+        <div class="event-card-header">
+            <a href="{{ path('club_show', {id: event.club.user.id}) }}" class="event-card-club">
+                <img src="{{ event.club.user.profileImg
+                            ? asset('uploads/' ~ event.club.user.profileImg)
+                            : 'https://placehold.co/40x40/8F1402/ffffff?text=' ~ event.club.name|first|upper }}"
+                     alt="{{ event.club.name }}"
+                     class="event-card-club-avatar">
+                <div class="event-card-club-meta">
+                    <span class="event-card-club-name">{{ event.club.name }}</span>
+                    <span class="event-card-club-handle">@{{ event.club.user.username }}</span>
+                </div>
+            </a>
+        </div>
+    {% endif %}
+
+    {# ── IMAGE DE L'ÉVÉNEMENT (placement contrôlé) ────────────────────────── #}
+    {% if event.image %}
+        <a href="{{ path('event_show', {id: event.id}) }}" class="event-card-img-wrap">
+            <img src="{{ asset('uploads/' ~ event.image) }}"
+                 alt="{{ event.title }}"
+                 class="event-card-img">
+        </a>
+    {% endif %}
+
+    {# ── CORPS ────────────────────────────────────────────────────────────── #}
+    <div class="event-card-body">
+
+        {# ── TITRE (cliquable vers la page détaillée) ─────────────────────── #}
+        <h3 class="event-card-title">
+            <a href="{{ path('event_show', {id: event.id}) }}">{{ event.title }}</a>
+        </h3>
+
+        {# ── MÉTA : lieu + date ───────────────────────────────────────────── #}
+        <div class="event-card-meta">
+            <span><i class="bi bi-geo-alt-fill"></i> {{ event.place ?: 'TBD' }}</span>
+            <span><i class="bi bi-clock-fill"></i> {{ event.eventDate ? event.eventDate|date('M d, Y · H:i') : 'N/A' }}</span>
+        </div>
+
+        {# ── DESCRIPTION ──────────────────────────────────────────────────── #}
+        {% if event.description %}
+            <p class="event-card-desc">{{ event.description }}</p>
+        {% endif %}
+
+        {# ── ACTIONS (selon le rôle / la propriété) ───────────────────────── #}
+        <div class="event-card-footer">
+
+            {% if isOwner %}
+                {# Le club propriétaire voit Delete #}
+                <form action="{{ path('event_delete', {id: event.id}) }}" method="POST" class="d-inline"
+                      onsubmit="return confirm('Delete this event?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_event_' ~ event.id) }}">
+                    <button type="submit" class="ec-btn ec-btn-delete">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                </form>
+
+            {% elseif is_granted('ROLE_STUDENT') %}
+                {# Les étudiants voient le compteur de likes #}
+                <span class="ec-likes-readonly">
+                    <i class="bi bi-heart-fill"></i> {{ event.likes|length }}
+                </span>
+
+            {% else %}
+                {# Autre club / visiteur : compteur de likes en lecture seule #}
+                <span class="ec-likes-readonly">
+                    <i class="bi bi-heart-fill"></i> {{ event.likes|length }}
+                </span>
+            {% endif %}
+
+        </div>
+
+    </div>
+</article>

@@ -200,30 +200,8 @@ class ClubController extends AbstractController
         return $this->render('club/clubFeed.html.twig',[
             'club'=>$club,
             'events'=>$posts,
+            
         ]);
     }
-#[Route('/club/event/{id}/delete', name: 'club_event_delete', methods: ['POST'])]
-    public function deleteEvent(int $id,Request $request):Response 
-    {
-        $event=$this->eventRepo->find($id);
-        if(!$event){
-            throw $this->createNotFoundException('Événement introuvable.');}
-        /** @var User $currentUser */
-        $currentUser = $this->getUser();
-        $club = $event->getClub();
-        if(!$club || $club->getUser()->getId()!==$currentUser->getId()){
-            throw $this->createAccessDeniedException("Vous n'avez pas l'autorisation de supprimer cet événement.");
-        }
-        $submittedToken = $request->request->get('_token');
-        if (!$this->isCsrfTokenValid('delete_event_' . $id, $submittedToken)) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
-        }
-        $this->em->remove($event);
-        $this->em->flush();
-
-        $this->addFlash('success', 'L\'événement a été supprimé avec succès.');
-
-        return $this->redirectToRoute('club_show', ['id' => $currentUser->getId()]);
-    }
-
+        
 }

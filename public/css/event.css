@@ -1,0 +1,222 @@
+
+/* ════════════════════════════════════════════════════════
+   EVENT CARD — coller à la fin de public/css/club.css
+   ════════════════════════════════════════════════════════ */
+
+.event-card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.09);
+    border: 1px solid #f0eded;
+    overflow: hidden;
+    margin-bottom: 16px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.event-card:last-child {
+    margin-bottom: 0;
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* En-tête club */
+.event-card-header {
+    padding: 16px 18px 12px 18px;
+}
+
+.event-card-club {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.event-card-club-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.event-card-club-meta {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.event-card-club-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #1a1a1a;
+}
+
+.event-card-club:hover .event-card-club-name {
+    color: #8F1402;
+}
+
+.event-card-club-handle {
+    font-size: 0.8rem;
+    color: #999;
+}
+
+/* Image — hauteur fixe, jamais déformée */
+.event-card-img-wrap {
+    display: block;
+    width: 100%;
+    height: 240px;
+    overflow: hidden;
+    background: #f3f3f3;
+}
+
+.event-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.event-card-img-wrap:hover .event-card-img {
+    transform: scale(1.03);
+}
+
+/* Corps */
+.event-card-body {
+    padding: 18px 22px 20px 22px;
+}
+
+/* Titre — force la couleur sombre (bat le défaut Bootstrap) */
+.event-card-title {
+    margin: 0 0 10px 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.event-card-title a {
+    color: #1a1a1a !important;
+    text-decoration: none !important;
+}
+
+.event-card-title a:hover {
+    color: #8F1402 !important;
+}
+
+/* Méta (lieu + date) */
+.event-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.event-card-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.85rem;
+    color: #777;
+}
+
+.event-card-meta i {
+    color: #8F1402;
+    font-size: 0.9rem;
+}
+
+/* Description */
+.event-card-desc {
+    color: #444;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Pied (actions) */
+.event-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid #f2f2f2;
+}
+
+.ec-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 50px;
+    padding: 7px 18px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+}
+
+.ec-btn-edit {
+    background: transparent;
+    color: #8F1402;
+    border-color: #8F1402;
+}
+
+.ec-btn-edit:hover {
+    background: #8F1402;
+    color: #fff;
+}
+
+.ec-btn-delete {
+    background: transparent;
+    color: #999;
+    border-color: #e0e0e0;
+}
+
+.ec-btn-delete:hover {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c2c7;
+}
+
+.ec-likes-readonly {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+.ec-likes-readonly i {
+    color: #f5c6c8;
+}
+
+/* Higher-specificity overrides to prevent parent/bootstrap rules from overriding event card colors */
+.content-card .event-card .event-card-title,
+.content-card .event-card .event-card-title a {
+    color: #1a1a1a !important;
+    text-decoration: none !important;
+}
+
+.content-card .event-card .event-card-title a:hover {
+    color: #8F1402 !important;
+}
+
+/* Extra high-specificity fallback: ensure event card title links never inherit Bootstrap blue */
+.event-card .event-card-title a,
+.event-card .event-card-title a:link,
+.event-card .event-card-title a:visited {
+    color: #1a1a1a !important;
+    text-decoration: none !important;
+}
+
+.event-card .event-card-title a:hover,
+.event-card .event-card-title a:focus {
+    color: #8F1402 !important;
+}

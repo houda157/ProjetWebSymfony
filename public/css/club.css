@@ -246,6 +246,16 @@
     color: #333;
 }
 
+/* ── Event cards inside content-card ──────────────────── */
+.content-card .event-card {
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+    border: 1px solid #ede8e8;
+}
+
+.content-card .event-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
 /* ── Labels avec icônes (form-label) ────────────────── */
 .form-label {
     font-weight: 600;
