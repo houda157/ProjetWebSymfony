@@ -139,25 +139,6 @@ class FeedController extends AbstractController
     //     return $this->redirectToRoute('app_home');
     // }
 
-    //make a caledner controller
-    #[Route('/calendar', name: 'calendar')]
-    public function calendar(EventRepository $eventRepo): Response
-    {
-        $events = $eventRepo->findBy([], ['eventDate' => 'ASC']);
-
-        $calendarEvents = [];
-        foreach ($events as $event) {
-            $calendarEvents[] = [
-                'title' => $event->getTitle() . ' — ' . $event->getClub()->getName(),
-                'start' => $event->getEventDate()->format('Y-m-d'),
-                'color' => '#8F1402'
-            ];
-        }
-
-        return $this->render('feed/calendar.html.twig', [
-            'calendarEvents' => $calendarEvents
-        ]);
-    }
 
 //evetn controller
     #[Route('/search', name: 'do_search')]
