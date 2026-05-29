@@ -327,6 +327,21 @@
     text-align: center;
 }
 
+/* ── EVENT DETAIL PAGE ───────────────────────────────── */
+.event-detail-img-wrap {
+    height: 320px;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.event-detail-desc {
+    font-size: 0.97rem;
+    line-height: 1.75;
+    color: #333;
+    margin-bottom: 28px;
+}
+
 /* ── PAST EVENT BADGE ────────────────────────────────── */
 .ec-badge-past {
     display: inline-flex;

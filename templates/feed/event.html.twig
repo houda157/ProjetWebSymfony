@@ -2,51 +2,38 @@
 
 {% block title %}{{ event.title }} — INSAT Pulse{% endblock %}
 
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/student.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/event.css') }}">
+{% endblock %}
+
 {% block body %}
-<div class="container mt-4" style="max-width:700px;">
+<div class="page-body">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
 
-    {% if event.image %}
-        <img src="{{ asset('uploads/' ~ event.image) }}" alt="Event"
-             class="w-100 rounded mb-3" style="max-height:350px; object-fit:cover;">
-    {% endif %}
+            {% include 'partials/_event_card.html.twig' with {
+                event:       event,
+                isOwner:     false,
+                isFeed:      true,
+                isLiked:     hasLiked,
+                isFollowing: isFollowing,
+                isDetail:    true
+            } %}
 
-    <div class="card p-4">
-        <h2 style="font-size:24px; font-weight:700;">{{ event.title }}</h2>
-
-        <p class="text-muted mb-1">
-            <i class="bi bi-calendar3"></i>
-            {{ event.eventDate|date('d/m/Y H:i') }}
-        </p>
-
-        {% if event.place %}
-        <p class="text-muted mb-3">
-            <i class="bi bi-geo-alt"></i>
-            {{ event.place }}
-        </p>
-        {% endif %}
-
-        <p class="text-muted mb-3">
-            <i class="bi bi-people"></i>
-            <a href="{{ path('club_show', {id: event.club.user.id}) }}" style="color:#8F1402;">
-                {{ event.club.name }}
-            </a>
-        </p>
-
-        <p style="font-size:15px; line-height:1.6;">{{ event.description }}</p>
-
-        <div class="d-flex align-items-center gap-3 mt-3">
+            <div class="mt-3">
             {% if is_granted('ROLE_STUDENT') %}
-                <form action="{{ path('app_like', {id: event.id}) }}" method="POST">
-                    <button type="submit" class="btn btn-sm" style="background-color:#8F1402; color:white;">
-                        {{ hasLiked ? '❤️ Unlike' : '🤍 Like' }} ({{ likeCount }})
-                    </button>
-                </form>
+                <a href="{{ path('app_home') }}" class="ec-btn ec-btn-edit">
+                    <i class="bi bi-arrow-left"></i> Back to feed
+                </a>
+            {% else %}
+                <a href="{{ path('club_feed') }}" class="ec-btn ec-btn-edit">
+                    <i class="bi bi-arrow-left"></i> Back to feed
+                </a>
             {% endif %}
+            </div>
 
-            <a href="{{ path('club_feed') }}" class="text-muted" style="font-size:14px; text-decoration:none;">
-                ← Back to feed
-            </a>
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

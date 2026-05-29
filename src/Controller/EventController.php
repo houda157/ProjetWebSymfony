@@ -128,22 +128,31 @@ class EventController extends AbstractController
             throw $this->createNotFoundException('Event introuvable.');
         }
 
-        $user = $this->getUser();
-        $student = $user ? $studentRepo->findOneBy(['user' => $user]) : null;
-        $hasLiked = false;
-        $likeCount = count($event->getLikes());
+        $likeCount   = count($event->getLikes());
+        $hasLiked    = false;
+        $isFollowing = false;
 
-        if ($student) {
-            $hasLiked = (bool) $likeRepo->findOneBy([
-                'student' => $student,
-                'event'   => $event,
-            ]);
+        if ($this->isGranted('ROLE_STUDENT')) {
+            $student = $studentRepo->findOneBy(['user' => $this->getUser()]);
+            if ($student) {
+                $hasLiked = (bool) $likeRepo->findOneBy([
+                    'student' => $student,
+                    'event'   => $event,
+                ]);
+                foreach ($student->getFollows() as $follow) {
+                    if ($follow->getClub()->getUser()->getId() === $event->getClub()->getUser()->getId()) {
+                        $isFollowing = true;
+                        break;
+                    }
+                }
+            }
         }
 
         return $this->render('feed/event.html.twig', [
-            'event'     => $event,
-            'hasLiked'  => $hasLiked,
-            'likeCount' => $likeCount,
+            'event'       => $event,
+            'hasLiked'    => $hasLiked,
+            'likeCount'   => $likeCount,
+            'isFollowing' => $isFollowing,
         ]);
     }
 

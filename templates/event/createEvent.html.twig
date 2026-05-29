@@ -7,6 +7,7 @@
 {% block title %}Create Event - INSAT Pulse{% endblock %}
 
 {% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/club.css') }}">
     <link rel="stylesheet" href="{{ asset('css/event.css') }}">
 {% endblock %}
 
@@ -30,7 +31,7 @@
                   • enctype="multipart/form-data" (car il y a un FileType)
                   • le token CSRF caché
                 #}
-                {{ form_start(form) }}
+                {{ form_start(form, { attr: { enctype: 'multipart/form-data' } }) }}
 
                     <div class="row g-4">
 
@@ -96,7 +97,7 @@
                             </label>
 
                             {# Label cliquable qui sert de zone d'upload visuelle #}
-                            <label class="photo-upload-label" for="photoInput"
+                            <label class="photo-upload-label" for="{{ form.imageFile.vars.id }}"
                                    style="height: 120px; flex-direction: column; justify-content: center;">
                                 <i class="bi bi-cloud-arrow-up" style="font-size: 2rem;"></i>
                                 <span id="photoLabel">Click to upload your image</span>
@@ -105,7 +106,6 @@
                             {# Input file caché — déclenché par le clic sur le label ci-dessus #}
                             {{ form_widget(form.imageFile, {
                                 attr: {
-                                    'id': 'photoInput',
                                     'accept': 'image/*',
                                     'style': 'display: none;'
                                 }
@@ -141,7 +141,7 @@
 {% block javascripts %}
     <script>
         // Mise à jour du label quand l'utilisateur sélectionne un fichier
-        const photoInput = document.getElementById('photoInput');
+        const photoInput = document.getElementById('{{ form.imageFile.vars.id }}');
         if (photoInput) {
             photoInput.addEventListener('change', function () {
                 document.getElementById('photoLabel').textContent =
