@@ -40,6 +40,7 @@ class ClubController extends AbstractController
     // Remplace : public/club.php (partie GET — affichage du profil)
     // ────────────────────────────────────────────────────────────────────────
     #[Route('/club/{id}', name: 'club_show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[IsGranted('ROLE_CLUB_CONFIRMED')]
     public function show(int $id): Response
     {
         // Remplace : $club = $clubModel->findById($club_id)
@@ -84,7 +85,54 @@ class ClubController extends AbstractController
             'form'        => $form,
         ]);
     }
+    #[Route('/club/{id}', name: 'club_show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[IsGranted('ROLE_STUDENT')]
+    public function showForStudent(int $id): Response
+    {
+        // Remplace : $club = $clubModel->findById($club_id)
+        $club = $this->clubRepo->findByUserId($id);
 
+        // Remplace : if (!$club) { die("Club introuvable."); }
+        if (!$club) {
+            throw $this->createNotFoundException('Club introuvable.');
+        }
+
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+
+        // Remplace : $is_owner = ($session_id == $club_id)
+        $isOwner = $currentUser && $currentUser->getId() === $id;
+        //$isOwner  = true; // Simplification pour le développement — à corriger plus tard
+        // Remplace : $isFollowing = $followModel->isFollowing($session_id, $club_id)
+        // Seulement pertinent pour les étudiants qui ne sont pas le propriétaire
+        $isFollowing = false;
+        if ($currentUser && !$isOwner && $this->isGranted('ROLE_STUDENT')) {
+            $isFollowing = $this->followRepo->isFollowing(
+                $currentUser->getStudent(),
+                $club
+            );
+        }
+        //liked event by the user
+            $likedEventIds = [];
+            if ($currentUser && $this->isGranted('ROLE_STUDENT')) {
+                foreach ($currentUser->getStudent()->getLikes() as $like) {
+                    $likedEventIds[] = $like->getEvent()->getId();
+                }
+            }
+    
+            return $this->render('club/clubProfile.html.twig', [
+                'club'        => $club,
+                'events'      => $club->getEvents(),
+                'followers'   => $club->getFollows(),
+                'isOwner'     => $isOwner,
+                'isFollowing' => $isFollowing,
+                'likedEventIds' => $likedEventIds,
+            ]);
+
+        
+
+        
+    }
     // ────────────────────────────────────────────────────────────────────────
     // Remplace : public/club.php (partie POST — update_profile)
     // ────────────────────────────────────────────────────────────────────────
@@ -151,5 +199,7 @@ class ClubController extends AbstractController
             
         ]);
     }
+   
+
         
 }

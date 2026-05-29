@@ -96,11 +96,24 @@ class StudentController extends AbstractController
                 return $this->redirectToRoute('app_profile_etudiant_show');
             }
         }
+        //liked and followed events
+        $likedEventIds = [];
+        $followedClubUserIds = [];
+        if ($currentUser && $this->isGranted('ROLE_STUDENT')) {
+            foreach ($currentUser->getStudent()->getLikes() as $like) {
+                $likedEventIds[] = $like->getEvent()->getId();
+            }
+            foreach ($currentUser->getStudent()->getFollows() as $follow) {
+                $followedClubUserIds[] = $follow->getClub()->getUser()->getId();
+            }
+        }
 
         return $this->render('student/studentProfile.html.twig', [
             'student' => $student,
             'form'    => $form,
             'isOwner' => $isOwner,
+            'likedEventIds' => $likedEventIds,
+            'followedClubUserIds' => $followedClubUserIds,
         ]);
     }
 

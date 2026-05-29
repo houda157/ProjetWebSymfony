@@ -181,13 +181,21 @@
 
                     {% if student.likes|length > 0 %}
                         {% for like in student.likes %}
+                            {% set event = like.event %}
+                                        
+                                        
+                            {% set isFollowing = event.club.user.id in followedClubUserIds %}
                             {% include 'partials/_event_card.html.twig' with {
-                                event: like.event,
-                                isOwner: false,
-                                isFeed: true
-                            } %}
+                                            event:       event,
+                                            isOwner:     false,
+                                            isFeed:      true,
+                                            isLiked:     true,
+                                            isFollowing: isFollowing
+                                        } %}
+
                         {% endfor %}
                     {% else %}
+
                         <div class="blank-panel">
                             <i class="bi bi-heart text-secondary" style="font-size:2.5rem;"></i>
                             <span class="text-secondary">No liked events yet.</span>

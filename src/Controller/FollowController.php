@@ -56,7 +56,7 @@ class FollowController extends AbstractController
             $follow = new Follow();
             $follow->setStudent($student);
             $follow->setClub($club);
-            $follow->setCreatedAt(new \DateTimeImmutable());
+            $follow->setCreatedAt(new \DateTime());
             
             $this->em->persist($follow);
             $this->em->flush();
