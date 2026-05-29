@@ -24,55 +24,75 @@ final class AdminController extends AbstractController
     }
 
 
-    #[Route('/admin/students', name: 'app_admin_show_students')]
-    public function showStudents(ManagerRegistry $doctrine): Response {
+    #[Route('/admin/students/{page?1}/{nbre?6}', name: 'app_admin_show_students')]
+    public function showStudents(ManagerRegistry $doctrine, int $page, int $nbre): Response {
         $repository = $doctrine->getRepository(Student::class);
-        $students = $repository->findAll();
-        return $this->render('admin/student.html.twig', ['students' => $students]);
+        $students = $repository->findBy([], [],$nbre, ($page - 1 ) * $nbre);
+        $nbstudent = $repository->count([]);
+        $nbrePage = ceil($nbstudent / $nbre) ;
+        return $this->render('admin/student.html.twig', ['students' => $students,
+            'isPaginated' => true,
+            'nbrePage' => $nbrePage,
+            'page' => $page,
+            'nbre' => $nbre]);
     }
 
-    #[Route('/admin/clubs/confirmed', name: 'app_admin_show_confirmed')]
-    public function showConfirmed(ClubRepository $clubRepository): Response
+
+    #[Route('/admin/clubs/confirmed/{page?1}/{nbre?6}', name: 'app_admin_show_confirmed')]
+    public function showConfirmed(ClubRepository $clubRepository, int $page, int $nbre): Response
     {
-        $allClubs = $clubRepository->findAll();
-        $confirmedClubs = [];
+        $role = 'ROLE_CLUB_CONFIRMED';
 
-        foreach ($allClubs as $club) {
-            $user = $club->getUser();
 
-            if ($user && in_array('ROLE_CLUB_CONFIRMED', $user->getRoles(), true)) {
-                $confirmedClubs[] = $club;
-            }
-        }
+        $confirmedClubs = $clubRepository->findClubsByRolePaginated($role, $page, $nbre);
+        $nbConfirmedClubs = $clubRepository->countClubsByRole($role);
+
+        $nbrePage = ceil($nbConfirmedClubs / $nbre);
+
         return $this->render('admin/confirmed.html.twig', [
             'clubs' => $confirmedClubs,
+            'isPaginated' => true,
+            'nbrePage' => $nbrePage,
+            'page' => $page,
+            'nbre' => $nbre
         ]);
     }
 
-    #[Route('/admin/clubs/not_confirmed', name: 'app_admin_show_not_confirmed')]
-    public function showNotConfirmed(ClubRepository $clubRepository): Response
+    #[Route('/admin/clubs/not_confirmed/{page?1}/{nbre?6}', name: 'app_admin_show_not_confirmed')]
+    public function showNotConfirmed(ClubRepository $clubRepository, int $page, int $nbre): Response
     {
-        $allClubs = $clubRepository->findAll();
-        $unconfirmedClubs = [];
 
-        foreach ($allClubs as $club) {
-            $user = $club->getUser();
+        $role = 'ROLE_CLUB_NOT_CONFIRMED';
 
-            if ($user && in_array('ROLE_CLUB_NOT_CONFIRMED', $user->getRoles(), true)) {
-                $unconfirmedClubs[] = $club;
-            }
-        }
+        $unconfirmedClubs = $clubRepository->findClubsByRolePaginated($role, $page, $nbre);
+        $nbUnconfirmedClubs = $clubRepository->countClubsByRole($role);
+
+        $nbrePage = ceil($nbUnconfirmedClubs / $nbre);
+
         return $this->render('admin/notconfirmed.html.twig', [
             'clubs' => $unconfirmedClubs,
+            'isPaginated' => true,
+            'nbrePage' => $nbrePage,
+            'page' => $page,
+            'nbre' => $nbre
         ]);
     }
 
 
-    #[Route('/admin/events', name: 'app_admin_show_events')]
-    public function showEvents(ManagerRegistry $doctrine): Response {
+    #[Route('/admin/events/{page?1}/{nbre?6}', name: 'app_admin_show_events')]
+    public function showEvents(ManagerRegistry $doctrine, int $page, int $nbre): Response {
         $repository = $doctrine->getRepository(Event::class);
-        $events = $repository->findAll();
-        return $this->render('admin/events.html.twig', ['events' => $events]);
+        $events = $repository->findBy([], [], $nbre, ($page - 1) * $nbre);
+        $nbevent = $repository->count([]);
+        $nbrePage = ceil($nbevent / $nbre);
+
+        return $this->render('admin/events.html.twig', [
+            'events' => $events,
+            'isPaginated' => true,
+            'nbrePage' => $nbrePage,
+            'page' => $page,
+            'nbre' => $nbre
+        ]);
     }
 
     #[Route('/admin/student/delete/{id}', name: 'delete_student', methods: ['POST', 'DELETE','GET'])]
