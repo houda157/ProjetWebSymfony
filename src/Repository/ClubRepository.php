@@ -9,13 +9,14 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<Club>
  */
+
 class ClubRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Club::class);
     }
-    public function findByUserId(int $userId): ?Club 
+    public function findByUserId(int $userId): ?Club
     {
         return $this->createQueryBuilder('c')
         ->join('c.user','u')
@@ -41,7 +42,27 @@ class ClubRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
-
+    public function findClubsByRolePaginated(string $role, int $page, int $nbre): array
+    {
+        return $this->createQueryBuilder('c')
+            ->innerJoin('c.user', 'u')
+            ->where('u.role = :role')
+            ->setParameter('role', $role)
+            ->setFirstResult(($page - 1) * $nbre)
+            ->setMaxResults($nbre)
+            ->getQuery()
+            ->getResult();
+    }
+    public function countClubsByRole(string $role): int
+    {
+        return (int) $this->createQueryBuilder('c')
+            ->select('count(DISTINCT c.id)')
+            ->innerJoin('c.user', 'u')
+            ->where('u.role = :role')
+            ->setParameter('role', $role)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 //    /**
 //     * @return Club[] Returns an array of Club objects
 //     */

@@ -3,3 +3,80 @@
 {% block BodyTitle %}
     Events dashboard
 {% endblock %}
+
+
+{% block Body %}
+    <div class="row">
+        {% for event in events %}
+            <div class="card m-3" style="width: 18rem;">
+                <div class="card-body">
+
+                    <h5 class="card-title">{{ event.title }}</h5>
+
+                    <p class="card-text">
+                        <strong>Date:</strong>
+                        {{ event.eventDate ? event.eventDate|date('d/m/Y') : 'Not provided' }}
+                    </p>
+
+                    <hr> <h6 style="color: #8F1402;">Events Details</h6>
+                    <p class="card-text mb-1">
+                        <strong>Description : </strong> #{{ event.description }}
+                    </p>
+
+                    <p class="card-text mb-1">
+                        <strong>Club:</strong> {{ event.club.name }}
+                    </p>
+
+
+                    <p class="card-text mb-1">
+                        <strong>Event ID:</strong> #{{ event.id }}
+                    </p>
+                    <a href="{{ path('delete_event', {'id': event.id}) }}"
+                       class="btn btn-sm mt-2"
+                       style="background-color: #8F1402; border-color: #8F1402; color: #ffffff;"
+                       onclick="return confirm('Delete this student?');">
+                        Delete
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <p class="alert alert-warning">No events found.</p>
+            </div>
+        {% endfor %}
+    </div>
+    {% if isPaginated is defined and isPaginated %}
+        <div class="row mt-2">
+            <nav aria-label="col Page navigation example">
+                <ul class="pagination">
+                    {% if page != 1 %}
+                        <li class="page-item">
+                            <a
+                                class="page-link"
+                                href="{{ path('app_admin_show_events', {page: page - 1, nbre: nbre}) }}"
+                            >
+                                Previous
+                            </a></li>
+                    {% endif %}
+                    {% for i in range(1, nbrePage) %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="{{ path('app_admin_show_events', {page: i, nbre: nbre}) }}"
+                            >{{ i }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                    {% if page != nbrePage %}
+                        <li class="page-item">
+                            <a
+                                class="page-link"
+                                href="{{ path('app_admin_show_events', {page: page + 1, nbre: nbre}) }}"
+                            >Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+        </div>
+    {% endif %}
+{% endblock %}

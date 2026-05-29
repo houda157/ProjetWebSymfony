@@ -3,3 +3,77 @@
 {% block BodyTitle %}
     Confirmed Clubs dashboard
 {% endblock %}
+
+{% block Body %}
+    <div class="row">
+        {% for club in clubs %}
+            <div class="card m-3" style="width: 18rem;">
+                <div class="card-body">
+
+                    <h5 class="card-title">{{ club.name }}</h5>
+                    <p class="card-text mb-1">
+                        <strong>Category : </strong> #{{ club.category }}
+                    </p>
+
+                    <hr> <h6 style="color: #8F1402;">Account Details</h6>
+
+                    <p class="card-text mb-1">
+                        <strong>Description : </strong> #{{ club.description }}
+                    </p>
+                    <p class="card-text mb-1">
+                        <strong>Email:</strong> {{ club.user.email }}
+                    </p>
+
+
+                    <p class="card-text mb-1">
+                        <strong>User ID:</strong> #{{ club.user.id }}
+                    </p>
+                    <a href="{{ path('delete_club', {'id': club.id}) }}"
+                       class="btn btn-sm mt-2"
+                       style="background-color: #8F1402; border-color: #8F1402; color: #ffffff;"
+                       onclick="return confirm('Delete this club?');">
+                        Delete
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <p class="alert alert-warning">No clubs found.</p>
+            </div>
+        {% endfor %}
+    </div>
+    {% if isPaginated is defined and isPaginated %}
+        <div class="row mt-2">
+            <nav aria-label="col Page navigation example">
+                <ul class="pagination">
+                    {% if page != 1 %}
+                        <li class="page-item">
+                            <a
+                                class="page-link"
+                                href="{{ path('app_admin_show_confirmed', {page: page - 1, nbre: nbre}) }}"
+                            >
+                                Previous
+                            </a></li>
+                    {% endif %}
+                    {% for i in range(1, nbrePage) %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="{{ path('app_admin_show_confirmed', {page: i, nbre: nbre}) }}"
+                            >{{ i }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                    {% if page != nbrePage %}
+                        <li class="page-item">
+                            <a
+                                class="page-link"
+                                href="{{ path('app_admin_show_confirmed', {page: page + 1, nbre: nbre}) }}"
+                            >Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+        </div>
+    {% endif %}
+{% endblock %}
