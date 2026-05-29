@@ -8,14 +8,14 @@
         <meta name="author" content="" />
         <title>INSAT Pulse - Admin</title>
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
-        <link href="../../public/css/styles.css" rel="stylesheet" />
+        <link href="{{ asset('css/styles.css') }}" rel="stylesheet" />
         <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     </head>
     <body class="sb-nav-fixed">
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
             <!-- Navbar Brand-->
-            <img src = '../../public/images/logo white.png' height="120px" style="margin: 20px;padding-top: 10px;">
-            
+            <img src = '{{ asset('images/logo white.png') }}' height="120px" style="margin: 60px;padding-top: 10px;">
+
             <!-- Sidebar Toggle-->
             <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
             <!-- Navbar Search-->
@@ -25,7 +25,7 @@
             </form>
             <!-- Navbar-->
             <!-- change : change the link to the login page -->
-            <a class="navbar-brand ps-1" href="../security/login.html.twig">
+            <a class="navbar-brand ps-1" href="{{ path('app_logout')}}">
                 Logout
             </a>
         </nav>
@@ -35,63 +35,62 @@
                     <div class="sb-sidenav-menu">
                         <div class="nav">
                             <div class="sb-sidenav-menu-heading">Tables</div>
-                            <!--change : need to change to which page every one redirects me-->
-                            <a class="nav-link" href="index.html">
+
+                            <a class="nav-link" href="{{ path('app_admin_show_students')}}">
                                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                                 Students
                             </a>
-                            <a class="nav-link" href="index.html">
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
                                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                                Clubs Confirmed
+                                Clubs
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                             </a>
-                            <a class="nav-link" href="index.html">
-                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                                Clubs Not Confirmed
-                            </a>
-                            <a class="nav-link" href="index.html">
+                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+                                    <a class="nav-link" href="{{ path('app_admin_show_confirmed')}}">Clubs Confirmed</a>
+                                    <a class="nav-link" href="{{ path('app_admin_show_not_confirmed')}}">Clubs Not Confirmed</a>
+                                </nav>
+                            </div>
+
+                            <a class="nav-link" href="{{ path('app_admin_show_events')}}">
                                 <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
                                 Events
                             </a>
-                            
-                            
+
+
                         </div>
                     </div>
                     <div class="sb-sidenav-footer">
                         <div class="small">Logged in as:</div>
-                        <!--change : this needs to show the username of the admin-->
+                        <strong>{{ app.user.username }}</strong>
+
                     </div>
                 </nav>
                 </div>
             <div id="layoutSidenav_content">
                 <main>
                     <div class="container-fluid px-4">
-                        <h1 class="mt-4"><!-- change : this needs to show the title of the page--></h1>
-                        
+                        <h1 class="mt-4">{% block BodyTitle %}
+                                Welcome to the Admin dashboard
+                            {% endblock %}
+                        </h1>
+
                         <div class="card mb-4">
                             <div class="card-body">
-                                
+                                {% block Body %}
+                                    Please select which category you want to monitor in the sidebar
+                                {% endblock %}
                             </div>
                         </div>
                         <div style="height: 100vh"></div>
-                        <div class="card mb-4"><div class="card-body">When scrolling, the navigation stays at the top of the page. This is the end of the static navigation demo.</div></div>
+
                     </div>
                 </main>
-                <footer class="py-4 bg-light mt-auto">
-                    <div class="container-fluid px-4">
-                        <div class="d-flex align-items-center justify-content-between small">
-                            <div class="text-muted">Copyright &copy; Your Website 2023</div>
-                            <div>
-                                <a href="#">Privacy Policy</a>
-                                &middot;
-                                <a href="#">Terms &amp; Conditions</a>
-                            </div>
-                        </div>
-                    </div>
-                </footer>
+
             </div>
-            
+
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-        <script src="../../assets/scripts.js"></script>
+        <script src='{{ asset('scripts.js') }}'></script>
     </body>
 </html>

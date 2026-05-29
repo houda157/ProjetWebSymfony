@@ -1,0 +1,19 @@
+{% extends 'admin/template.html.twig' %}
+
+{% block BodyTitle %}
+    Students dashboard
+{% endblock %}
+
+{% block Body %}
+        <div class="row">
+            {% for student in students %}
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ student.fullname }}</h5>
+
+
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+{% endblock %}

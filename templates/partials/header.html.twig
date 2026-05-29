@@ -1,24 +1,24 @@
 {% set sessionUser = app.user %}
 
 {% if is_granted('ROLE_ADMIN') %}
-    {% set profileUrl = path('admin_dashboard') %}
+    {% set profileUrl = path('app_admin') %}
 {% elseif is_granted('ROLE_CLUB_CONFIRMED') or is_granted('ROLE_CLUB_NOT_CONFIRMED') %}
     {% set profileUrl = path('club_show', {id: sessionUser.id}) %}
 {% else %}
-    {% set profileUrl = path('app_profile_etudiant_show', {id: sessionUser.student.id}) %} 
+    {% set profileUrl = path('app_profile_etudiant_show', {id: sessionUser.student.id}) %}
 {% endif %}
 
 <nav class="navbar-home">
     <div class="navbar-logo">
     {%if is_granted('ROLE_STUDENT') %}
         <a href="{{ path('app_home') }}">
-        
+
     {% elseif is_granted('ROLE_CLUB_CONFIRMED') or is_granted('ROLE_CLUB_NOT_CONFIRMED') %}
         <a href="{{ path('club_feed') }}">
-        
+
     {% endif %}
         <img src="{{ asset('images/logo.png') }}" alt="INSAT PULSE">
-        </a>    
+        </a>
     </div>
 
     <div class="nav-icons">
@@ -27,21 +27,21 @@
            class="nav-icon-btn {{ app.request.attributes.get('_route') in ['app_home', 'admin_dashboard', 'club_feed', 'student_feed'] ? 'active' : '' }}"
            title="Home">
             <i class="bi bi-house-door-fill"></i>
-        </a> 
+        </a>
     {% elseif is_granted('ROLE_CLUB_CONFIRMED') or is_granted('ROLE_CLUB_NOT_CONFIRMED') %}
         <a href="{{ path('club_feed') }}"
            class="nav-icon-btn {{ app.request.attributes.get('_route') in ['app_home', 'admin_dashboard', 'club_feed', 'student_feed'] ? 'active' : '' }}"
            title="Home">
             <i class="bi bi-house-door-fill"></i>
-        </a> 
+        </a>
      {% endif %}
-       
+
 
     <a href="{{ path('calendar') }}"
            class="nav-icon-btn {{ app.request.attributes.get('_route') == 'calendar' ? 'active' : '' }}"
            title="Calendar">
             <i class="bi bi-calendar-event"></i>
-        </a> 
+        </a>
     </div>
 
     <div class="navbar-search" style="position: relative;">

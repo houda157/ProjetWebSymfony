@@ -16,10 +16,13 @@ class SecurityController extends AbstractController
         $error = $authenticationUtils->getLastAuthenticationError();
 
         if ($this->getUser()) {
+            if (in_array('ROLE_ADMIN', $this->getUser()->getRoles(), true)) {
+                return $this->redirectToRoute('app_admin');
+            }
             return $this->redirectToRoute('app_home');
         }
 
-        return $this->render('security/login.html.twig', [
+        return $this->render('security/login.html.twig',[
             'error' => $error,
         ]);
     }
