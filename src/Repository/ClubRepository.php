@@ -15,7 +15,7 @@ class ClubRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Club::class);
     }
-    public function findByUserId(int $userId): ?Club 
+    public function findByUserId(int $userId): ?Club
     {
         return $this->createQueryBuilder('c')
         ->join('c.user','u')
@@ -31,7 +31,6 @@ class ClubRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
-
 //    /**
 //     * @return Club[] Returns an array of Club objects
 //     */

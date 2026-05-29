@@ -5,15 +5,43 @@
 {% endblock %}
 
 {% block Body %}
-        <div class="row">
-            {% for student in students %}
-                <div class="card" style="width: 18rem;">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ student.fullname }}</h5>
+    <div class="row">
+        {% for student in students %}
+            <div class="card m-3" style="width: 18rem;">
+                <div class="card-body">
+
+                    <h5 class="card-title">{{ student.fullname }}</h5>
+                    <p class="card-text">
+                        <strong>Major:</strong> {{ student.major|default('Not specified') }}
+                    </p>
+                    <p class="card-text">
+                        <strong>Birthday:</strong>
+                        {{ student.birthday ? student.birthday|date('d/m/Y') : 'Not provided' }}
+                    </p>
+
+                    <hr> <h6 style="color: #8F1402;">Account Details</h6>
 
 
-                    </div>
+                    <p class="card-text mb-1">
+                        <strong>Email:</strong> {{ student.user.email }}
+                    </p>
+
+
+                    <p class="card-text mb-1">
+                        <strong>User ID:</strong> #{{ student.user.id }}
+                    </p>
+                    <a href="{{ path('delete_student', {'id': student.id}) }}"
+                       class="btn btn-sm mt-2"
+                       style="background-color: #8F1402; border-color: #8F1402; color: #ffffff;"
+                       onclick="return confirm('Delete this student?');">
+                        Delete
+                    </a>
                 </div>
-            {% endfor %}
-        </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <p class="alert alert-warning">No students found.</p>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}

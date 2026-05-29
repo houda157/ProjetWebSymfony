@@ -3,3 +3,46 @@
 {% block BodyTitle %}
     Events dashboard
 {% endblock %}
+
+
+{% block Body %}
+    <div class="row">
+        {% for event in events %}
+            <div class="card m-3" style="width: 18rem;">
+                <div class="card-body">
+
+                    <h5 class="card-title">{{ event.title }}</h5>
+
+                    <p class="card-text">
+                        <strong>Date:</strong>
+                        {{ event.eventDate ? event.eventDate|date('d/m/Y') : 'Not provided' }}
+                    </p>
+
+                    <hr> <h6 style="color: #8F1402;">Events Details</h6>
+                    <p class="card-text mb-1">
+                        <strong>Description : </strong> #{{ event.description }}
+                    </p>
+
+                    <p class="card-text mb-1">
+                        <strong>Club:</strong> {{ event.club.name }}
+                    </p>
+
+
+                    <p class="card-text mb-1">
+                        <strong>Event ID:</strong> #{{ event.id }}
+                    </p>
+                    <a href="{{ path('delete_event', {'id': event.id}) }}"
+                       class="btn btn-sm mt-2"
+                       style="background-color: #8F1402; border-color: #8F1402; color: #ffffff;"
+                       onclick="return confirm('Delete this student?');">
+                        Delete
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <p class="alert alert-warning">No events found.</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

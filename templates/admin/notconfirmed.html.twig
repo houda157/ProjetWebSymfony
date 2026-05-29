@@ -3,3 +3,47 @@
 {% block BodyTitle %}
     Not confirmed Clubs dashboard
 {% endblock %}
+
+{% block Body %}
+    <div class="row">
+        {% for club in clubs %}
+            <div class="card m-3" style="width: 18rem;">
+                <div class="card-body">
+
+                    <h5 class="card-title">{{ club.name }}</h5>
+                    <p class="card-text mb-1">
+                        <strong>Category : </strong> #{{ club.category }}
+                    </p>
+
+                    <hr> <h6 style="color: #8F1402;">Account Details</h6>
+
+                    <p class="card-text mb-1">
+                        <strong>Email:</strong> {{ club.user.email }}
+                    </p>
+
+
+                    <p class="card-text mb-1">
+                        <strong>User ID:</strong> #{{ club.user.id }}
+                    </p>
+                    <div>
+                        <a href="{{ path('delete_club', {'id': club.id}) }}"
+                           class="btn btn-sm mt-2"
+                           style="background-color: #8F1402; border-color: #8F1402; color: #ffffff;"
+                           onclick="return confirm('Delete this club?');">
+                            Delete
+                        </a>
+                        <a href="{{ path('approve_club', {'id': club.id}) }}"
+                           class="btn btn-sm mt-2"
+                           style="background-color: #8F1402; border-color: #8F1402; color: #ffffff;">
+                            Approve
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <p class="alert alert-warning">No unconfirmed clubs found.</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
