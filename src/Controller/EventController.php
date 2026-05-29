@@ -13,6 +13,9 @@ namespace App\Controller;
 use App\Entity\Event;
 use App\Entity\User;
 use App\Form\EventType;
+use App\Repository\EventRepository;
+use App\Repository\LikeRepository;
+use App\Repository\StudentRepository;
 use App\Service\FileUploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -82,14 +85,6 @@ class EventController extends AbstractController
         ]);
     }
 
-    // ── Affichage d'un événement individuel ──────────────────────────────────
-    #[Route('/event/{id}', name: 'event_show', methods: ['GET'])]
-    public function show(Event $event): Response
-    {
-        return $this->render('feed/event.html.twig', [
-            'event' => $event,
-        ]);
-    }
 
     #[Route('/event/{id}/delete', name: 'event_delete', methods: ['POST'])]
     #[IsGranted('ROLE_CLUB_CONFIRMED')]
@@ -119,4 +114,47 @@ class EventController extends AbstractController
 
         return $this->redirectToRoute('club_show', ['id' => $currentUser->getId()]);
     }
+    // go to event controller
+    #[Route('/event/{id}', name: 'event_show')]
+    public function eventShow(
+        int $id,
+        EventRepository $eventRepo,
+        LikeRepository $likeRepo,
+        StudentRepository $studentRepo
+    ): Response {
+        $event = $eventRepo->find($id);
+
+        if (!$event) {
+            throw $this->createNotFoundException('Event introuvable.');
+        }
+
+        $likeCount   = count($event->getLikes());
+        $hasLiked    = false;
+        $isFollowing = false;
+
+        if ($this->isGranted('ROLE_STUDENT')) {
+            $student = $studentRepo->findOneBy(['user' => $this->getUser()]);
+            if ($student) {
+                $hasLiked = (bool) $likeRepo->findOneBy([
+                    'student' => $student,
+                    'event'   => $event,
+                ]);
+                foreach ($student->getFollows() as $follow) {
+                    if ($follow->getClub()->getUser()->getId() === $event->getClub()->getUser()->getId()) {
+                        $isFollowing = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $this->render('feed/event.html.twig', [
+            'event'       => $event,
+            'hasLiked'    => $hasLiked,
+            'likeCount'   => $likeCount,
+            'isFollowing' => $isFollowing,
+        ]);
+    }
+
+
 }

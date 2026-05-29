@@ -1,6 +1,10 @@
 /* public/css/base.css
    Styles globaux — fond rosé, typographie de base */
 
+:root {
+    font-size: 22px;
+}
+
 body {
     background: linear-gradient(135deg, #fde8e0 0%, #f9d5d3 40%, #f5c6c8 100%);
     min-height: 100vh;

@@ -39,52 +39,48 @@ class ClubController extends AbstractController
     // ────────────────────────────────────────────────────────────────────────
     // Remplace : public/club.php (partie GET — affichage du profil)
     // ────────────────────────────────────────────────────────────────────────
-    #[Route('/club/{id}', name: 'club_show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[Route('/club/{id}', name: 'club_show', requirements: ['id' => '\d+'], methods: ['GET'])]  
     public function show(int $id): Response
     {
-        // Remplace : $club = $clubModel->findById($club_id)
         $club = $this->clubRepo->findByUserId($id);
 
-        // Remplace : if (!$club) { die("Club introuvable."); }
         if (!$club) {
             throw $this->createNotFoundException('Club introuvable.');
         }
 
-        /** @var User|null $currentUser */
         $currentUser = $this->getUser();
-
-        // Remplace : $is_owner = ($session_id == $club_id)
-        $isOwner = $currentUser && $currentUser->getId() === $id;
-        //$isOwner  = true; // Simplification pour le développement — à corriger plus tard
-        // Remplace : $isFollowing = $followModel->isFollowing($session_id, $club_id)
-        // Seulement pertinent pour les étudiants qui ne sont pas le propriétaire
+        assert($currentUser instanceof User);
+        $isOwner     = $currentUser->getId() === $id;
         $isFollowing = false;
-        if ($currentUser && !$isOwner && $this->isGranted('ROLE_STUDENT')) {
-            $isFollowing = $this->followRepo->isFollowing(
-                $currentUser->getStudent(),
-                $club
-            );
-        }
-
+        $likedEventIds = [];
         $form = null;
-        if ($isOwner) {
+
+        if ($this->isGranted('ROLE_CLUB_CONFIRMED') && $isOwner) {
             $form = $this->createForm(ClubFormType::class, $club, [
-                'action' => $this->generateUrl('club_edit', ['id' => $id]),
-                'method' => 'POST',
+                'action'        => $this->generateUrl('club_edit', ['id' => $id]),
+                'method'        => 'POST',
                 'csrf_token_id' => 'club_edit',
             ])->createView();
         }
 
+        if ($this->isGranted('ROLE_STUDENT')) {
+            $student = $currentUser->getStudent();
+            $isFollowing = $this->followRepo->isFollowing($student, $club);
+            foreach ($student->getLikes() as $like) {
+                $likedEventIds[] = $like->getEvent()->getId();
+            }
+        }
+
         return $this->render('club/clubProfile.html.twig', [
-            'club'        => $club,
-            'events'      => $club->getEvents(),
-            'followers'   => $club->getFollows(),
-            'isOwner'     => $isOwner,
-            'isFollowing' => $isFollowing,
-            'form'        => $form,
+            'club'          => $club,
+            'events'        => $club->getEvents(),
+            'followers'     => $club->getFollows(),
+            'isOwner'       => $isOwner,
+            'isFollowing'   => $isFollowing,
+            'likedEventIds' => $likedEventIds,
+            'form'          => $form,
         ]);
     }
-
     // ────────────────────────────────────────────────────────────────────────
     // Remplace : public/club.php (partie POST — update_profile)
     // ────────────────────────────────────────────────────────────────────────
@@ -139,54 +135,6 @@ class ClubController extends AbstractController
         ]);
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    // Remplace : public/actions/do-follow.php
-    // Toggle Follow / Unfollow — seuls les étudiants peuvent suivre
-    // ────────────────────────────────────────────────────────────────────────
-    #[Route('/club/{id}/follow', name: 'club_follow_toggle', requirements: ['id' => '\d+'], methods: ['POST'])]
-    #[IsGranted('ROLE_STUDENT')]
-    public function toggleFollow(int $id, Request $request): Response
-    {
-        $club = $this->clubRepo->findByUserId($id);
-
-        if (!$club) {
-            throw $this->createNotFoundException('Club introuvable.');
-        }
-
-        // Vérification du token CSRF
-        $submittedToken = $request->request->get('_token');
-        if (!$this->isCsrfTokenValid('follow' . $id, $submittedToken)) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
-        }
-
-        /** @var User $currentUser */
-        $currentUser = $this->getUser();
-        $student = $currentUser->getStudent();
-
-        // Cherche un follow existant
-        $existingFollow = $this->followRepo->findOneBy([
-            'student' => $student,
-            'club'    => $club,
-        ]);
-
-        if ($existingFollow) {
-            // Déjà follower → unfollow
-            $this->em->remove($existingFollow);
-            $this->em->flush();
-            $this->addFlash('success', 'Vous ne suivez plus ' . $club->getName() . '.');
-        } else {
-            // Pas encore follower → follow
-            $follow = new Follow();
-            $follow->setStudent($student);
-            $follow->setClub($club);
-            $follow->setCreatedAt(new \DateTime());
-            $this->em->persist($follow);
-            $this->em->flush();
-            $this->addFlash('success', 'Vous suivez maintenant ' . $club->getName() . ' !');
-        }
-//redirect to last page
-        return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('app_home'));
-    }
     #[Route('/club/feed',name:'club_feed',methods:['GET'])]
     #[IsGranted('ROLE_CLUB_CONFIRMED')]
     public function feedShow():Response
@@ -199,5 +147,7 @@ class ClubController extends AbstractController
             
         ]);
     }
+   
+
         
 }

@@ -16,7 +16,7 @@
 
             {% if events is empty %}
                 <div class="blank-panel">
-                    <i class="bi bi-megaphone text-secondary" style="font-size:2.5rem;"></i>
+                    <i class="bi bi-megaphone text-secondary feed-blank-icon"></i>
                     <span class="text-secondary">No posts yet.</span>
                 </div>
             {% else %}
@@ -37,38 +37,28 @@
 
         {# ── SIDEBAR: UPCOMING ──────────────────────────────── #}
         <div class="col-12 col-lg-4">
-            <div class="sidebar-card" style="text-align:left; position:sticky; top:20px;">
+            <div class="sidebar-card upcoming-sidebar">
 
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div class="panel-icon-block">
                         <i class="bi bi-calendar-event-fill"></i>
                     </div>
-                    <span class="panel-title" style="font-size:1.1rem;">Upcoming</span>
+                    <span class="panel-title upcoming-heading">Upcoming</span>
                 </div>
 
                 {% if upcoming is empty %}
-                    <p class="text-muted" style="font-size:0.88rem;">
+                    <p class="text-muted upcoming-hint">
                         Like events to see your upcoming schedule here.
                     </p>
                 {% else %}
                     <div class="d-flex flex-column gap-2">
                         {% for ev in upcoming %}
-                            <a href="{{ path('event_show', {id: ev.id}) }}"
-                               style="text-decoration:none; color:inherit;">
-                                <div style="
-                                    padding: 10px 14px;
-                                    border-radius: 12px;
-                                    border-left: 3px solid #8F1402;
-                                    background: #fdf8f8;
-                                    transition: background 0.15s ease;
-                                " onmouseover="this.style.background='#fbeaea'"
-                                   onmouseout="this.style.background='#fdf8f8'">
-                                    <div style="font-weight:700; font-size:0.88rem; color:#1a1a1a;">
-                                        {{ ev.title }}
-                                    </div>
-                                    <div style="font-size:0.78rem; color:#8F1402; margin-top:3px;">
+                            <a href="{{ path('event_show', {id: ev.id}) }}" class="upcoming-link">
+                                <div class="upcoming-item">
+                                    <div class="upcoming-item-title">{{ ev.title }}</div>
+                                    <div class="upcoming-item-date">
                                         <i class="bi bi-calendar3"></i>
-                                        {{ ev.eventDate|date('d MMM · H:i') }}
+                                        {{ ev.eventDate|date('d/m/Y · H:i') }}
                                     </div>
                                 </div>
                             </a>

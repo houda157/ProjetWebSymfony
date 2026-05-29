@@ -31,6 +31,16 @@ class EventRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    public function searchByTitle(string $q, int $limit = 5): array
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.title LIKE :q')
+            ->setParameter('q', '%' . $q . '%')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function getAllPosts():array
     {
         return $this->createQueryBuilder('e')

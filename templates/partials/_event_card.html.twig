@@ -16,6 +16,7 @@
 {% set isFeed      = isFeed|default(false) %}
 {% set isLiked     = isLiked|default(false) %}
 {% set isFollowing = isFollowing|default(false) %}
+{% set isDetail    = isDetail|default(false) %}
 
 
 <article class="event-card">
@@ -50,11 +51,19 @@
     {% endif %}
 
     {% if event.image %}
-        <a href="{{ path('event_show', {id: event.id}) }}" class="event-card-img-wrap">
-            <img src="{{ asset('uploads/' ~ event.image) }}"
-                 alt="{{ event.title }}"
-                 class="event-card-img">
-        </a>
+        {% if isDetail %}
+            <div class="event-detail-img-wrap">
+                <img src="{{ asset('uploads/' ~ event.image) }}"
+                     alt="{{ event.title }}"
+                     class="event-card-img">
+            </div>
+        {% else %}
+            <a href="{{ path('event_show', {id: event.id}) }}" class="event-card-img-wrap">
+                <img src="{{ asset('uploads/' ~ event.image) }}"
+                     alt="{{ event.title }}"
+                     class="event-card-img">
+            </a>
+        {% endif %}
     {% endif %}
 
     <div class="event-card-body">
@@ -69,7 +78,7 @@
         </div>
 
         {% if event.description %}
-            <p class="event-card-desc">{{ event.description }}</p>
+            <p class="{{ isDetail ? 'event-detail-desc' : 'event-card-desc' }}">{{ event.description }}</p>
         {% endif %}
 
         <div class="event-card-footer">

@@ -86,6 +86,7 @@
                     
 
                     <div id="posts-feed">
+                    {% if is_granted('ROLE_CLUB_CONFIRMED') %}
                         {% if events|length > 0 %}
                             {% for e in events %}
                                 {% include 'partials/_event_card.html.twig' with {event: e, isOwner: isOwner, isFeed: false} %}
@@ -96,6 +97,20 @@
                                 <span class="text-secondary">No posts published yet.</span>
                             </div>
                         {% endif %}
+                    {% else %}
+                    {% for event in events %}
+                    {% set isLiked     = event.id in likedEventIds %}
+                    
+                    {% include 'partials/_event_card.html.twig' with {
+                        event:       event,
+                        isOwner:     false,
+                        isFeed:      false,
+                        isLiked:     isLiked,
+                        
+                    } %}
+                {% endfor %}
+                        {% endif %}
+
                     </div>
                 </div>
 

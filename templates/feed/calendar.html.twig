@@ -12,19 +12,59 @@
         .fc-button-primary { background-color: #8B0000 !important; border-color: #8B0000 !important; }
         .fc-button-primary:hover { background-color: #6B0F01 !important; border-color: #6B0F01 !important; }
         .fc-button-primary:not(.fc-button-active) { background-color: #e0e0e0 !important; border-color: #e0e0e0 !important; color: #333 !important; }
-        .fc-daygrid-event { background-color: #8B0000 !important; border-color: #8B0000 !important; border-radius: 4px; }
+        .fc-daygrid-event { border-radius: 4px; }
+
+        .filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 18px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+            border: 2px solid;
+        }
+        .filter-btn.all {
+            border-color: #8B0000;
+            background: {% if not likedOnly %}#8B0000{% else %}transparent{% endif %};
+            color: {% if not likedOnly %}#fff{% else %}#8B0000{% endif %};
+        }
+        .filter-btn.liked {
+            border-color: #1a6b3c;
+            background: {% if likedOnly %}#1a6b3c{% else %}transparent{% endif %};
+            color: {% if likedOnly %}#fff{% else %}#1a6b3c{% endif %};
+        }
+        .filter-btn:hover { opacity: 0.85; }
     </style>
 {% endblock %}
 
 {% block body %}
 <div class="container mt-4">
     <div class="card p-4">
-        <div class="d-flex align-items-center gap-3 mb-4">
-            <div style="background:#fbeaea; padding:10px; border-radius:12px;">
-                <i class="bi bi-calendar3" style="color:#8B0000; font-size:1.5rem;"></i>
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div style="background:#fbeaea; padding:10px; border-radius:12px;">
+                    <i class="bi bi-calendar3" style="color:#8B0000; font-size:1.5rem;"></i>
+                </div>
+                <h2 style="font-weight:800; margin:0; color:#1a1a1a; font-size:1.4rem;">
+                    {% if likedOnly %}My Liked Events{% else %}All Events Calendar{% endif %}
+                </h2>
             </div>
-            <h2 style="font-weight:800; margin:0; color:#1a1a1a; font-size:1.4rem;">All Events Calendar</h2>
+
+            {% if isStudent %}
+            <div class="d-flex gap-2">
+                <a href="{{ path('calendar') }}" class="filter-btn all">
+                    <i class="bi bi-calendar3"></i> All Events
+                </a>
+                <a href="{{ path('calendar', {liked: 1}) }}" class="filter-btn liked">
+                    <i class="bi bi-heart-fill"></i> Liked Events
+                </a>
+            </div>
+            {% endif %}
         </div>
+
         <div id="calendar"></div>
     </div>
 </div>
