@@ -21,13 +21,32 @@ class FeedController extends AbstractController
     }
     #[Route('/', name: 'app_home')]
     #[Route('/', name: 'app_feed')]
-    //is granted for student only
-    #[IsGranted('ROLE_STUDENT')]
     public function index(
         EventRepository $eventRepo,
         StudentRepository $studentRepo
     ): Response {
         $user    = $this->getUser();
+
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return $this->redirectToRoute('app_admin');
+        }
+
+        if ($this->isGranted('ROLE_CLUB_CONFIRMED')) {
+            return $this->redirectToRoute('club_feed');
+        }
+
+        if ($this->isGranted('ROLE_CLUB_NOT_CONFIRMED')) {
+            return $this->redirectToRoute('app_logout');
+        }
+
+        if (!$this->isGranted('ROLE_STUDENT')) {
+            throw $this->createAccessDeniedException('No home page is configured for this role.');
+        }
+
         $student = $user ? $studentRepo->findOneBy(['user' => $user]) : null;
         $events  = $eventRepo->findBy([], ['eventDate' => 'DESC']);
         $now     = new \DateTime();

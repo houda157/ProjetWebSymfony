@@ -14,6 +14,7 @@ class SecurityController extends AbstractController
     {
         // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
+        $lastEmail = $authenticationUtils->getLastUsername();
 
         if ($this->getUser()) {
             if (in_array('ROLE_ADMIN', $this->getUser()->getRoles(), true)) {
@@ -23,6 +24,7 @@ class SecurityController extends AbstractController
         }
 
         return $this->render('security/login.html.twig',[
+            'lastEmail' => $lastEmail,
             'error' => $error,
         ]);
     }
