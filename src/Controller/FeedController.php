@@ -19,8 +19,6 @@ class FeedController extends AbstractController
     public function _construct(){
         /// 3abihom
     }
-    #[Route('/', name: 'app_home')]
-    #[Route('/', name: 'app_feed')]
     public function index(
         EventRepository $eventRepo,
         StudentRepository $studentRepo
