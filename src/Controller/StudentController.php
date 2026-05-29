@@ -90,6 +90,7 @@ class StudentController extends AbstractController
                 if ($photoFile) {
                     $path = $this->uploader->upload($photoFile, 'users/profile_img', (string) $student->getId());
                     $student->getUser()->setProfileImg($path);
+                    $em->persist($student->getUser());
                 }
                 $em->flush();
                 $this->addFlash('success', 'Profile updated successfully!');
