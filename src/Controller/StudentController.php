@@ -29,8 +29,7 @@ class StudentController extends AbstractController
         EventRepository $eventRepo,
         StudentRepository $studentRepo
     ): Response {
-        $user    = $this->getUser();
-        $student = $user ? $studentRepo->findOneBy(['user' => $user]) : null;
+        $student=$studentRepo->find(1);
         $events  = $eventRepo->findBy([], ['eventDate' => 'DESC']);
         $now     = new \DateTime();
 

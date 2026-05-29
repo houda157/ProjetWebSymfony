@@ -139,54 +139,6 @@ class ClubController extends AbstractController
         ]);
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    // Remplace : public/actions/do-follow.php
-    // Toggle Follow / Unfollow — seuls les étudiants peuvent suivre
-    // ────────────────────────────────────────────────────────────────────────
-    #[Route('/club/{id}/follow', name: 'club_follow_toggle', requirements: ['id' => '\d+'], methods: ['POST'])]
-    #[IsGranted('ROLE_STUDENT')]
-    public function toggleFollow(int $id, Request $request): Response
-    {
-        $club = $this->clubRepo->findByUserId($id);
-
-        if (!$club) {
-            throw $this->createNotFoundException('Club introuvable.');
-        }
-
-        // Vérification du token CSRF
-        $submittedToken = $request->request->get('_token');
-        if (!$this->isCsrfTokenValid('follow' . $id, $submittedToken)) {
-            throw $this->createAccessDeniedException('Token CSRF invalide.');
-        }
-
-        /** @var User $currentUser */
-        $currentUser = $this->getUser();
-        $student = $currentUser->getStudent();
-
-        // Cherche un follow existant
-        $existingFollow = $this->followRepo->findOneBy([
-            'student' => $student,
-            'club'    => $club,
-        ]);
-
-        if ($existingFollow) {
-            // Déjà follower → unfollow
-            $this->em->remove($existingFollow);
-            $this->em->flush();
-            $this->addFlash('success', 'Vous ne suivez plus ' . $club->getName() . '.');
-        } else {
-            // Pas encore follower → follow
-            $follow = new Follow();
-            $follow->setStudent($student);
-            $follow->setClub($club);
-            $follow->setCreatedAt(new \DateTime());
-            $this->em->persist($follow);
-            $this->em->flush();
-            $this->addFlash('success', 'Vous suivez maintenant ' . $club->getName() . ' !');
-        }
-//redirect to last page
-        return $this->redirect($request->headers->get('referer') ?? $this->generateUrl('app_home'));
-    }
     #[Route('/club/feed',name:'club_feed',methods:['GET'])]
     #[IsGranted('ROLE_CLUB_CONFIRMED')]
     public function feedShow():Response
