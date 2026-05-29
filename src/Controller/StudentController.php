@@ -19,18 +19,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class StudentController extends AbstractController
 {
     public function __construct(
-        private FileUploadService $uploader
+        private FileUploadService $uploader,
+        private EventRepository $eventRepo,
+        private StudentRepository $studentRepo,
+        private ClubRepository $clubRepo,
     ) {}
 
     #[Route('/', name: 'app_home')]
     #[Route('/', name: 'app_feed')]
     #[IsGranted('ROLE_STUDENT')]
-    public function index(
-        EventRepository $eventRepo,
-        StudentRepository $studentRepo
-    ): Response {
-        $student=$studentRepo->find(1);
-        $events  = $eventRepo->findBy([], ['eventDate' => 'DESC']);
+    public function index(): Response {
+        $user    = $this->getUser();
+        $student = $user ? $this->studentRepo->findOneBy(['user' => $user]) : null;
+        $events  = $this->eventRepo->findBy([], ['eventDate' => 'DESC']);
         $now     = new \DateTime();
 
         $likedEventIds       = [];
@@ -61,11 +62,13 @@ class StudentController extends AbstractController
         ]);
     }
 
-    #[Route('/profile/{id}', name: 'app_profile_etudiant_show', methods: ['GET', 'POST'])]
+    #[Route('/profile', name: 'app_profile_etudiant_show', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_STUDENT')]
-    public function show(int $id, StudentRepository $studentRepository, Request $request, EntityManagerInterface $em): Response
+    public function show(Request $request, EntityManagerInterface $em): Response
     {
-        $student = $studentRepository->find($id);
+        /** @var User $user */
+        $user = $this->getUser();
+        $student = $this->studentRepo->find($user->getStudent()->getId());
 
         if (!$student) {
             throw $this->createNotFoundException('Student not found');
@@ -85,12 +88,12 @@ class StudentController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
                 $photoFile = $form->get('photoFile')->getData();
                 if ($photoFile) {
-                    $path = $this->uploader->upload($photoFile, 'users/profile_img', (string) $id);
+                    $path = $this->uploader->upload($photoFile, 'users/profile_img', (string) $student->getId());
                     $student->getUser()->setProfileImg($path);
                 }
                 $em->flush();
                 $this->addFlash('success', 'Profile updated successfully!');
-                return $this->redirectToRoute('app_profile_etudiant_show', ['id' => $id]);
+                return $this->redirectToRoute('app_profile_etudiant_show');
             }
         }
 
@@ -102,30 +105,15 @@ class StudentController extends AbstractController
     }
 
     #[Route('/search', name: 'do_search')]
-    public function search(
-        Request $request,
-        EventRepository $eventRepo,
-        ClubRepository $clubRepo
-    ): JsonResponse {
+    public function search(Request $request): JsonResponse {
         $q = trim($request->query->get('q', ''));
 
         if (strlen($q) < 1) {
             return new JsonResponse(['clubs' => [], 'events' => []]);
         }
 
-        $clubs = $clubRepo->createQueryBuilder('c')
-            ->where('c.name LIKE :q')
-            ->setParameter('q', '%' . $q . '%')
-            ->setMaxResults(5)
-            ->getQuery()
-            ->getResult();
-
-        $events = $eventRepo->createQueryBuilder('e')
-            ->where('e.title LIKE :q')
-            ->setParameter('q', '%' . $q . '%')
-            ->setMaxResults(5)
-            ->getQuery()
-            ->getResult();
+        $clubs  = $this->clubRepo->searchByName($q);
+        $events = $this->eventRepo->searchByTitle($q);
 
         $clubsData = array_map(fn($c) => [
             'id'   => $c->getUser()->getId(),

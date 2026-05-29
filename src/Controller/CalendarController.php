@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-
+use App\Entity\User;
 #[IsGranted('ROLE_USER')]
 class CalendarController extends AbstractController
 {
@@ -16,10 +16,12 @@ class CalendarController extends AbstractController
     public function index(Request $request, EventRepository $eventRepo): Response
     {
         $likedOnly = $request->query->getBoolean('liked');
+        /** @var User $user */
         $user = $this->getUser();
         $isStudent = $this->isGranted('ROLE_STUDENT');
 
         if ($likedOnly && $isStudent) {
+            
             $student = $user->getStudent();
             $events = array_map(
                 fn($like) => $like->getEvent(),

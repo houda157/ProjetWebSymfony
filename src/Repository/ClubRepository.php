@@ -24,6 +24,16 @@ class ClubRepository extends ServiceEntityRepository
         ->getQuery()
         ->getOneOrNullResult();
     }
+    public function searchByName(string $q, int $limit = 5): array
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.name LIKE :q')
+            ->setParameter('q', '%' . $q . '%')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function save(Club $club,bool $flush=true):void
     {
         $this->getEntityManager()->persist($club);
