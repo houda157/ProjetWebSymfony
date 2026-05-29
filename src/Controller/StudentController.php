@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
+use App\Form\ProfileEtudiantFormType;
 use App\Repository\ClubRepository;
 use App\Repository\EventRepository;
-use App\Repository\LikeRepository;
 use App\Repository\StudentRepository;
+use App\Service\FileUploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,14 +16,14 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-class FeedController extends AbstractController
+class StudentController extends AbstractController
 {
-    public function _construct(){
-        /// 3abihom
-    }
+    public function __construct(
+        private FileUploadService $uploader
+    ) {}
+
     #[Route('/', name: 'app_home')]
     #[Route('/', name: 'app_feed')]
-    //is granted for student only
     #[IsGranted('ROLE_STUDENT')]
     public function index(
         EventRepository $eventRepo,
@@ -59,107 +61,47 @@ class FeedController extends AbstractController
             'now'                 => $now,
         ]);
     }
-// chnage this to like controller
-    #[Route('/like/{id}', name: 'app_like', methods: ['POST'])]
+
+    #[Route('/profile/{id}', name: 'app_profile_etudiant_show', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_STUDENT')]
-    public function like(
-        int $id,
-        Request $request,
-        EventRepository $eventRepo,
-        LikeRepository $likeRepo,
-        StudentRepository $studentRepo,
-        EntityManagerInterface $em
-    ): Response {
-        $user    = $this->getUser();
-        $student = $user ? $studentRepo->findOneBy(['user' => $user]) : null;
-        $event   = $eventRepo->find($id);
-
-        if (!$student || !$event) {
-            return $this->redirectToRoute('app_home');
-        }
-
-        $existingLike = $likeRepo->findOneBy([
-            'student' => $student,
-            'event'   => $event,
-        ]);
-
-        if ($existingLike) {
-            $em->remove($existingLike);
-        } else {
-            $like = new \App\Entity\Like();
-            $like->setStudent($student);
-            $like->setEvent($event);
-            $em->persist($like);
-        }
-
-        $em->flush();
-
-        $referer = $request->headers->get('referer');
-        if ($referer) {
-            return $this->redirect($referer);
-        }
-        return $this->redirectToRoute('app_home');
-    }
-// go to event controller
-    #[Route('/event/{id}', name: 'event_show')]
-    public function eventShow(
-        int $id,
-        EventRepository $eventRepo,
-        LikeRepository $likeRepo,
-        StudentRepository $studentRepo
-    ): Response {
-        $event = $eventRepo->find($id);
-
-        if (!$event) {
-            throw $this->createNotFoundException('Event introuvable.');
-        }
-
-        $user = $this->getUser();
-        $student = $user ? $studentRepo->findOneBy(['user' => $user]) : null;
-        $hasLiked = false;
-        $likeCount = count($event->getLikes());
-
-        if ($student) {
-            $hasLiked = (bool) $likeRepo->findOneBy([
-                'student' => $student,
-                'event'   => $event,
-            ]);
-        }
-
-        return $this->render('student/studentEvent.html.twig', [
-            'event'     => $event,
-            'hasLiked'  => $hasLiked,
-            'likeCount' => $likeCount,
-        ]);
-    }
-// normalement zeyed
-    // #[Route('/student/profile/{id}', name: 'student_profile')]
-    // public function studentProfile(int $id): Response
-    // {
-    //     return $this->redirectToRoute('app_home');
-    // }
-
-    //make a caledner controller
-    #[Route('/calendar', name: 'calendar')]
-    public function calendar(EventRepository $eventRepo): Response
+    public function show(int $id, StudentRepository $studentRepository, Request $request, EntityManagerInterface $em): Response
     {
-        $events = $eventRepo->findBy([], ['eventDate' => 'ASC']);
+        $student = $studentRepository->find($id);
 
-        $calendarEvents = [];
-        foreach ($events as $event) {
-            $calendarEvents[] = [
-                'title' => $event->getTitle() . ' — ' . $event->getClub()->getName(),
-                'start' => $event->getEventDate()->format('Y-m-d'),
-                'color' => '#8F1402'
-            ];
+        if (!$student) {
+            throw $this->createNotFoundException('Student not found');
         }
 
-        return $this->render('feed/calendar.html.twig', [
-            'calendarEvents' => $calendarEvents
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        $isOwner = $currentUser
+            && $currentUser->getStudent()
+            && $currentUser->getStudent()->getId() === $student->getId();
+
+        $form = null;
+        if ($isOwner) {
+            $form = $this->createForm(ProfileEtudiantFormType::class, $student);
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+                $photoFile = $form->get('photoFile')->getData();
+                if ($photoFile) {
+                    $path = $this->uploader->upload($photoFile, 'users/profile_img', (string) $id);
+                    $student->getUser()->setProfileImg($path);
+                }
+                $em->flush();
+                $this->addFlash('success', 'Profile updated successfully!');
+                return $this->redirectToRoute('app_profile_etudiant_show', ['id' => $id]);
+            }
+        }
+
+        return $this->render('student/studentProfile.html.twig', [
+            'student' => $student,
+            'form'    => $form,
+            'isOwner' => $isOwner,
         ]);
     }
 
-//evetn controller
     #[Route('/search', name: 'do_search')]
     public function search(
         Request $request,
@@ -171,7 +113,7 @@ class FeedController extends AbstractController
         if (strlen($q) < 1) {
             return new JsonResponse(['clubs' => [], 'events' => []]);
         }
-//query in the repository
+
         $clubs = $clubRepo->createQueryBuilder('c')
             ->where('c.name LIKE :q')
             ->setParameter('q', '%' . $q . '%')
