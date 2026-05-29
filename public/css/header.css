@@ -6,7 +6,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 32px;
+    padding: 0 32px;
+    height: 70px;
     background: #fff;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
     border-bottom: 1px solid #f0f0f0;
@@ -22,8 +23,9 @@
 
 .navbar-logo img {
     display: block;
-    height: 42px;
+    height: 105px;
     width: auto;
+    margin-top: 16px;
     transition: opacity 0.15s ease;
 }
 
@@ -53,7 +55,7 @@
 }
 
 .nav-icon-btn i {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     line-height: 1;
 }
 
@@ -126,7 +128,7 @@
 .user-handle {
     font-weight: 600;
     color: #333;
-    font-size: 14px;
+    
 }
 
 .user-avatar {
@@ -159,7 +161,7 @@
     background: #8F1402;
     color: #fff;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 0.8rem;
     text-decoration: none;
     transition: background 0.15s ease;
 }
